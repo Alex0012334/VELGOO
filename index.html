@@ -151,14 +151,25 @@
     .filter-row input, .filter-row select { width: auto; min-width: 180px; padding: 8px 10px; }
     .empty { padding: 30px 16px; text-align: center; color: var(--muted); }
     .empty strong { display: block; margin-bottom: 5px; color: #c1cbd4; }
+    .folder-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .folder-card { display: flex; min-height: 174px; flex-direction: column; align-items: flex-start; padding: 17px; color: var(--text); text-align: left; cursor: pointer; transition: .15s ease; }
+    .folder-card:hover { border-color: #52718a; background: #252e37; transform: translateY(-2px); }
+    .folder-icon { display: grid; width: 40px; height: 40px; place-items: center; margin-bottom: 15px; border: 1px solid #38526a; border-radius: 9px; color: #8bc7f2; background: #183247; font-size: 19px; }
+    .folder-card strong { font-size: 14px; }
+    .folder-card p { margin: 4px 0 14px; color: var(--muted); font-size: 11px; }
+    .folder-card .folder-count { margin-top: auto; color: #8aa0b2; font-size: 10px; }
+    .folder-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
     .file-layout { grid-template-columns: minmax(0,1fr) 300px; align-items: start; }
     .file-main { min-width: 0; }
     .file-list { position: sticky; top: 14px; overflow: hidden; }
     .file-list-items { display: grid; max-height: 620px; overflow: auto; }
-    .file-list-item { display: block; width: 100%; padding: 12px 14px; border: 0; border-bottom: 1px solid #303943; color: var(--text); background: transparent; text-align: left; cursor: pointer; }
+    .file-list-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid #303943; }
     .file-list-item:last-child { border-bottom: 0; }
     .file-list-item:hover, .file-list-item.active { background: #2a333d; }
     .file-list-item.active { box-shadow: inset 2px 0 var(--blue); }
+    .file-list-select { flex: 1; min-width: 0; padding: 4px; border: 0; color: var(--text); background: transparent; text-align: left; cursor: pointer; }
+    .file-list-delete { flex: 0 0 auto; padding: 5px 7px; border: 1px solid transparent; border-radius: 5px; color: #e58b8b; background: transparent; font-size: 11px; }
+    .file-list-delete:hover { border-color: #744949; background: #422b2b; }
     .file-list-name { display: block; font-size: 12px; font-weight: 650; overflow-wrap: anywhere; }
     .file-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 5px 10px; margin-top: 6px; color: var(--muted); font-size: 10px; }
     .file-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
@@ -210,6 +221,7 @@
       .content { padding: 22px 18px; }
       .stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
       .two-col, .profile-layout, .file-layout, .admin-grid { grid-template-columns: minmax(0,1fr); }
+      .folder-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .file-list { position: static; }
       .file-list-items { max-height: 260px; }
     }
@@ -237,6 +249,8 @@
       .form-grid { grid-template-columns: minmax(0,1fr); }
       .form-grid .full { grid-column: auto; }
       .file-layout { grid-template-columns: minmax(0,1fr); }
+      .folder-grid { gap: 10px; }
+      .folder-card { min-height: 158px; padding: 13px; }
       .viewer-stage { min-height: 300px; }
       .viewer-stage.viewer-stage-3d { height: min(60vh,420px); min-height: 280px; }
       .viewer-stage iframe, .viewer-stage canvas { min-height: 300px; }
@@ -297,6 +311,12 @@
       const DRIVE_API_URL = "https://script.google.com/macros/s/AKfycbxjyzr4eiTfBls5pwyCCJVuMMq59FqQhEWroiab8R9sDnAmCq_OoYPpl79PphK7QrKY/exec";
       const DEPARTMENTS = ["Mechanical Engineer", "Electrical Engineer", "Software Engineer", "Social Media Officer", "Web Site Officer", "CEO / Admin"];
       const STATUSES = ["Pending", "In Progress", "Done"];
+      const FILE_FOLDERS = [
+        { id: "social-media", name: "Social Media", icon: "◉", description: "Campaigns, photos, and media assets." },
+        { id: "mechanical", name: "Mechanical", icon: "◇", description: "3D models, CAD parts, and assemblies." },
+        { id: "electronic", name: "Electronic", icon: "⌁", description: "KiCad projects, schematics, and boards." },
+        { id: "software", name: "Software", icon: "⌘", description: "Code, firmware, and software builds." }
+      ];
       const TASK_DESCRIPTION_PREVIEW_LIMIT = 60;
       const MAX_VIEWER_TRIANGLES = 8000;
       const MAX_3D_PREVIEW_BYTES = 25*1024*1024;
@@ -382,6 +402,7 @@
       let activePage = "dashboard";
       let scheduleWeekOffset = 0;
       let selectedFileId = null;
+      let activeFileFolder = null;
       let viewerObjectUrl = null;
       let viewerCleanup = null;
       let previewGeneration = 0;
@@ -836,6 +857,7 @@
       const userById = userId => state.users.find(user => user.id === userId);
       const isAdmin = () => Boolean(session?.isAdmin);
       const canManage = () => !isAdmin() && session?.department === "CEO / Admin";
+      const canDeleteFile = file => isAdmin() || canManage() || file?.createdBy === session?.id || (!file?.createdBy && file?.author === displayName(session));
       const displayName = user => [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.username || "User";
       const initials = user => `${user?.firstName?.[0] || user?.username?.[0] || "V"}${user?.lastName?.[0] || ""}`.toUpperCase();
       const fmtDate = date => date ? new Date(`${date}T00:00:00`).toLocaleDateString("en-GB") : "—";
@@ -1138,11 +1160,31 @@
       function fileTypeFor(file) {
         const ext = (file.name.split(".").pop() || "").toLowerCase();
         if (["stl", "step", "stp", "sldprt", "sldasm", "3mf"].includes(ext)) return "ENG-3D";
-        if (["hex", "bin", "ino", "elf"].includes(ext)) return "ENG-SOFT";
-        if (["sch", "pcb", "brd"].includes(ext)) return "ENG-ELEC";
+        if (["sch", "pcb", "brd", "pro", "mod", "lib", "net", "kicad_sch", "kicad_pcb", "kicad_pro", "kicad_mod", "kicad_wks", "kicad_prl", "kicad_dru", "kicad_sym", "kicad_fp_lib_table", "kicad_sym_lib_table", "gbr", "ger", "drl"].includes(ext)) return "ENG-ELEC";
+        if (["hex", "bin", "ino", "elf", "c", "h", "cpp", "hpp", "py", "js", "ts", "java", "rs", "go", "cs", "uf2"].includes(ext)) return "ENG-SOFT";
         return "DOC-GENERAL";
       }
       function fileExtension(file) { return (file.name.split(".").pop() || "").toLowerCase(); }
+      function fileFolderForDepartment(department) {
+        const value = String(department || "").toLowerCase();
+        if (value.includes("mechanical")) return "mechanical";
+        if (value.includes("electrical") || value.includes("electronic")) return "electronic";
+        if (value.includes("software")) return "software";
+        if (value.includes("social media") || value.includes("web site")) return "social-media";
+        return null;
+      }
+      function fileFolder(file) {
+        if (FILE_FOLDERS.some(folder => folder.id === file.folder)) return file.folder;
+        if (file.tag === "ENG-3D") return "mechanical";
+        if (file.tag === "ENG-ELEC") return "electronic";
+        if (file.tag === "ENG-SOFT") return "software";
+        const inferredTag = fileTypeFor(file);
+        if (inferredTag === "ENG-3D") return "mechanical";
+        if (inferredTag === "ENG-ELEC") return "electronic";
+        if (inferredTag === "ENG-SOFT") return "software";
+        const task = state.tasks.find(item => item.id === file.taskId);
+        return fileFolderForDepartment(task?.department) || "social-media";
+      }
       function formatFileSize(bytes) {
         return bytes < 1024 ? `${bytes} B` : bytes < 1024*1024 ? `${(bytes/1024).toFixed(1)} KB` : `${(bytes/1024/1024).toFixed(1)} MB`;
       }
@@ -1335,27 +1377,36 @@
         const tasks = visibleTasks();
         if (selectedFileId && !state.files.some(file => file.id === selectedFileId)) selectedFileId = null;
         const files = state.files.filter(file => canManage() || tasks.some(task => task.id === file.taskId));
-        if (!selectedFileId && files.length) selectedFileId = files[0].id;
-        const selected = files.find(file => file.id === selectedFileId);
+        const folderFiles = activeFileFolder ? files.filter(file => fileFolder(file) === activeFileFolder).sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || ""))) : [];
+        if (selectedFileId && !folderFiles.some(file => file.id === selectedFileId)) selectedFileId = null;
+        if (!selectedFileId && folderFiles.length) selectedFileId = folderFiles[0].id;
+        const selected = folderFiles.find(file => file.id === selectedFileId);
         const selectedTask = selected && state.tasks.find(task => task.id === selected.taskId);
         const keepPreview = Boolean(previousPreview && selected && selected.id === previousSelectedFileId);
         if (!keepPreview) clearViewerResources();
         const actions = `<button class="btn" data-action="register-file">＋ Register File</button>`;
         const drive = isAdmin() && state.driveUrl ? `<a class="btn btn-primary" href="${safeUrl(state.driveUrl)}" target="_blank" rel="noopener noreferrer">↗ Open Google Drive</a>` : "";
-        $("#content").innerHTML = `${pageHeading("Engineering Resources", "Files and CAD", "Preview STL, STEP, SLDPRT, PDF, image, and text files. Other formats can be downloaded.", actions + drive)}
+        const activeFolder = FILE_FOLDERS.find(folder => folder.id === activeFileFolder);
+        $("#content").innerHTML = `${pageHeading("Engineering Resources", activeFolder ? activeFolder.name : "Files and CAD", activeFolder ? activeFolder.description : "Browse project files by team. CAD models, KiCad files, documents, PDFs, and photos stay together in their folder.", actions + drive)}
+          ${activeFolder ? `<div class="folder-toolbar"><button class="btn btn-sm" data-back-folders>← All folders</button><span class="muted">${folderFiles.length} ${folderFiles.length === 1 ? "file" : "files"}</span></div>
           ${selected ? `<div class="grid file-layout">
             <div class="file-main">
-              <section class="card"><div class="card-header"><div style="min-width:0"><h2 class="file-name">${escapeHtml(selected.name)}</h2><div class="file-meta"><span>${escapeHtml(selected.tag)}</span><span>${escapeHtml(selected.taskId)}</span><span>${escapeHtml(selected.sizeLabel)}</span><span>${new Date(selected.createdAt).toLocaleString("en-GB")}</span></div></div><div class="heading-actions"><button class="btn btn-primary btn-sm" data-download-selected="${escapeHtml(selected.id)}">↓ Download</button>${canManage() ? `<button class="btn btn-sm btn-danger" data-delete-file="${escapeHtml(selected.id)}">Delete</button>` : ""}</div></div>
+              <section class="card"><div class="card-header"><div style="min-width:0"><h2 class="file-name">${escapeHtml(selected.name)}</h2><div class="file-meta"><span>${escapeHtml(selected.tag)}</span><span>${escapeHtml(selected.taskId)}</span><span>${escapeHtml(selected.sizeLabel)}</span><span>${new Date(selected.createdAt).toLocaleString("en-GB")}</span></div></div><div class="heading-actions"><button class="btn btn-primary btn-sm" data-download-selected="${escapeHtml(selected.id)}">↓ Download</button>${canDeleteFile(selected) ? `<button class="btn btn-sm btn-danger" data-delete-file="${escapeHtml(selected.id)}">Delete</button>` : ""}</div></div>
                 <div class="card-body"><div class="file-info"><span class="muted">Task: ${escapeHtml(selectedTask?.title || selected.taskId)}</span>${selectedTask ? statusBadge(selectedTask.status) : ""}</div><div id="file-preview" class="viewer-stage" aria-live="polite"><div class="viewer-message">Loading file preview…</div></div></div>
               </section>
               <section class="card file-comments" style="margin-top:14px"><div class="card-header"><h2>Engineering Comments</h2><span class="muted">${(selected.comments || []).length}</span></div><div class="card-body"><form id="comment-form"><div class="field"><label for="comment-text">New Note</label><textarea id="comment-text" required maxlength="2000" placeholder="Add a comment, revision, or version note…"></textarea></div><button class="btn btn-primary btn-sm">Add Comment</button></form><div class="comment-list">${(selected.comments || []).length ? selected.comments.map(comment => `<div class="comment"><div class="comment-head"><strong>${escapeHtml(comment.author)}</strong><time>${new Date(comment.createdAt).toLocaleString("en-GB")}</time></div><p>${escapeHtml(comment.text)}</p></div>`).join("") : `<div class="muted">No comments yet.</div>`}</div></div></section>
             </div>
-            <aside class="card file-list"><div class="card-header"><h2>Project Files</h2><span class="muted">${files.length}</span></div><div class="file-list-items">${files.map(file => {
+            <aside class="card file-list"><div class="card-header"><h2>${escapeHtml(activeFolder.name)} files</h2><span class="muted">${folderFiles.length}</span></div><div class="file-list-items">${folderFiles.map(file => {
               const task = state.tasks.find(item => item.id === file.taskId);
-              return `<button type="button" class="file-list-item ${file.id === selected.id ? "active" : ""}" data-select-file="${escapeHtml(file.id)}"><span class="file-list-name">${escapeHtml(file.name)}</span><span class="file-meta"><span>${new Date(file.createdAt).toLocaleDateString("en-GB")}</span><span>${escapeHtml(file.taskId)}</span></span><span class="file-meta"><span>${escapeHtml(file.tag)}</span>${task ? statusBadge(task.status) : ""}</span></button>`;
+              return `<div class="file-list-item ${file.id === selected.id ? "active" : ""}"><button type="button" class="file-list-select" data-select-file="${escapeHtml(file.id)}"><span class="file-list-name">${escapeHtml(file.name)}</span><span class="file-meta"><span>${new Date(file.createdAt).toLocaleDateString("en-GB")}</span><span>${escapeHtml(file.taskId)}</span></span><span class="file-meta"><span>${escapeHtml(file.tag)}</span>${task ? statusBadge(task.status) : ""}</span></button>${canDeleteFile(file) ? `<button type="button" class="file-list-delete" data-delete-file="${escapeHtml(file.id)}" aria-label="Delete ${escapeHtml(file.name)}">Delete</button>` : ""}</div>`;
             }).join("")}</div></aside>
-          </div>` :
-          `<section class="card">${empty("No files registered yet", "Add a file and link it to a task to see it in the file library.")}<div style="text-align:center;padding:0 16px 22px"><button class="btn btn-primary" data-action="register-file">＋ Register File</button>${drive ? ` <a class="btn" href="${safeUrl(state.driveUrl)}" target="_blank" rel="noopener noreferrer">↗ Open Google Drive</a>` : ""}</div></section>`}`;
+          </div>
+          ` :
+          `<section class="card">${empty("This folder is empty", "Register a file and choose this folder to add it to the viewer.")}</section>`}
+          ` : `<div class="grid folder-grid">${FILE_FOLDERS.map(folder => {
+            const count = files.filter(file => fileFolder(file) === folder.id).length;
+            return `<button type="button" class="card folder-card" data-open-folder="${folder.id}"><span class="folder-icon">${folder.icon}</span><strong>${folder.name}</strong><p>${folder.description}</p><span class="folder-count">${count} ${count === 1 ? "file" : "files"} <span aria-hidden="true">· Open folder →</span></span></button>`;
+          }).join("")}</div>`}`;
         if (keepPreview) {
           $("#file-preview").replaceWith(previousPreview);
         } else if (selected) {
@@ -1364,6 +1415,8 @@
         if (selected) {
           $("#comment-form").addEventListener("submit", event => { event.preventDefault(); addComment(selected.id, $("#comment-text").value); });
         }
+        $("#content").querySelectorAll("[data-open-folder]").forEach(button => button.addEventListener("click", () => { activeFileFolder = button.dataset.openFolder; selectedFileId = null; renderFiles(); }));
+        $("#content").querySelector("[data-back-folders]")?.addEventListener("click", () => { activeFileFolder = null; renderFiles(); });
         $("#content").querySelectorAll("[data-select-file]").forEach(button => button.addEventListener("click", () => { selectedFileId = button.dataset.selectFile; renderFiles(); }));
         $("#content").querySelector("[data-download-selected]")?.addEventListener("click", async () => {
           try { await downloadTaskAttachment(selected.id, selected.name); }
@@ -1569,15 +1622,18 @@
         notify("Comment added.");
       }
       async function deleteFile(fileId) {
-        if (!canManage() || !confirm("Delete this file registration and its comments?")) return;
-        const driveFileId = state.files.find(file => file.id === fileId)?.driveFileId;
+        const target = state.files.find(file => file.id === fileId);
+        if (!target || !canDeleteFile(target) || !confirm("Delete this file and its comments from the shared library?")) return;
+        const driveFileId = target.driveFileId;
         const previousFiles = state.files;
+        const previousSelectedFileId = selectedFileId;
         state.files = state.files.filter(file => file.id !== fileId);
         if (selectedFileId === fileId) selectedFileId = null;
-        if (!saveState()) { state.files = previousFiles; return; }
+        if (!saveState()) { state.files = previousFiles; selectedFileId = previousSelectedFileId; return; }
         await cloudSaveQueue;
         if (cloudLastError) {
           state.files = previousFiles;
+          selectedFileId = previousSelectedFileId;
           saveState();
           notify("File was not deleted because Drive could not save the updated file list.", true);
           return;
@@ -1720,7 +1776,9 @@
       function openFileModal() {
         const tasks = visibleTasks();
         if (!tasks.length) { notify("Create a task before registering a file.", true); return; }
+        const defaultFolder = activeFileFolder || fileFolderForDepartment(tasks[0]?.department) || "social-media";
         const body = `<div class="field"><label>File from Device</label><input name="file" type="file" required></div>
+          <div class="field"><label>Folder</label><select name="folder" required>${FILE_FOLDERS.map(folder => `<option value="${folder.id}" ${folder.id === defaultFolder ? "selected" : ""}>${folder.name}</option>`).join("")}</select><span class="muted" style="font-size:10px">PDFs and photos can be placed in any folder.</span></div>
           <div class="field"><label>Linked Task</label><select name="taskId" required>${tasks.map(task => `<option value="${escapeHtml(task.id)}">${escapeHtml(task.id)} — ${escapeHtml(task.title)}</option>`).join("")}</select></div>
           <div class="field"><label>File Type</label><select name="tag"><option>ENG-3D</option><option>ENG-ELEC</option><option>ENG-SOFT</option><option>DOC-GENERAL</option></select><span class="muted" style="font-size:10px">The type is selected automatically based on the extension and can be changed.</span></div>
           <div class="notice">The file will be uploaded to the shared Google Drive folder and linked to this task. Maximum 20 MB.</div>`;
@@ -1731,7 +1789,7 @@
           if (!task) return notify("The selected task is no longer available.", true);
           const tag = form.get("tag") || fileTypeFor(file);
           const sizeLabel = formatFileSize(file.size);
-          const record = { id: id(), name: file.name, sizeLabel, bytes: file.size, type: file.type || "", tag, taskId: task.id, author: displayName(session), createdAt: new Date().toISOString(), comments: [] };
+          const record = { id: id(), name: file.name, sizeLabel, bytes: file.size, type: file.type || "", tag, folder: form.get("folder"), taskId: task.id, author: displayName(session), createdBy: session.id, createdAt: new Date().toISOString(), comments: [] };
           try {
             const attachment = { id: record.id, file };
             await storeTaskAttachments([attachment]);
