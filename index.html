@@ -1,0 +1,1573 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171c22">
+  <title>VELGO | R&D Platform</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #171c22;
+      --panel: #20262e;
+      --panel-2: #252d36;
+      --panel-3: #2b343f;
+      --line: #39434e;
+      --text: #e8edf2;
+      --muted: #98a5b3;
+      --blue: #1687d9;
+      --blue-hover: #279ae9;
+      --green: #42b883;
+      --amber: #d7a84c;
+      --red: #df6969;
+      --radius: 8px;
+      font: 14px/1.5 "Segoe UI", Inter, system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 0; min-height: 100vh; background: var(--bg); color: var(--text); }
+    button, input, select, textarea { font: inherit; }
+    button { color: inherit; cursor: pointer; }
+    .hidden { display: none !important; }
+    .muted { color: var(--muted); }
+    .eyebrow { color: #7f91a3; text-transform: uppercase; letter-spacing: .12em; font-size: 10px; font-weight: 700; }
+    .login-wrap { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: radial-gradient(ellipse at 50% 12%, #263746 0, #171c22 54%); }
+    .login-card { width: min(440px, 100%); padding: 32px; border: 1px solid var(--line); background: rgba(32,38,46,.96); border-radius: 12px; box-shadow: 0 24px 80px #0007; }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; font-size: 14px; font-weight: 750; letter-spacing: .04em; }
+    .brand-mark { display: block; width: 136px; height: 40px; flex: 0 0 auto; object-fit: contain; }
+    .brand-caption { color: var(--muted); white-space: nowrap; }
+    .login-card h1 { margin: 28px 0 5px; font-size: 24px; }
+    .login-card > p { margin: 0 0 24px; color: var(--muted); }
+    .field { display: grid; gap: 6px; margin-bottom: 14px; }
+    label { color: #bdc7d1; font-size: 12px; font-weight: 650; }
+    input, select, textarea { width: 100%; color: var(--text); background: #171c22; border: 1px solid var(--line); border-radius: 6px; padding: 10px 11px; outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px #1687d926; }
+    textarea { min-height: 88px; resize: vertical; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel-3); padding: 8px 12px; font-weight: 650; transition: .15s ease; }
+    .btn:hover { background: #36414d; border-color: #536271; }
+    .btn-primary { background: var(--blue); border-color: var(--blue); color: white; }
+    .btn-primary:hover { background: var(--blue-hover); border-color: var(--blue-hover); }
+    .btn-danger { color: #ffaaaa; }
+    .btn-sm { padding: 5px 9px; font-size: 12px; }
+    .wide { width: 100%; }
+    .login-actions { display: grid; gap: 9px; margin-top: 20px; }
+    .demo-note { margin-top: 18px; padding: 10px 12px; border: 1px solid #3c5264; border-radius: 6px; background: #1b2a36; color: #a9bfce; font-size: 11px; }
+    .cloud-connection { margin-top: 12px; color: #9eb4c5; font-size: 11px; }
+    .cloud-connection.error { color: #ffaaaa; }
+    .cloud-connection button { margin-left: 6px; padding: 0; border: 0; color: #78bff2; background: none; text-decoration: underline; }
+    .app-shell { display: grid; grid-template-columns: 230px minmax(0, 1fr); min-height: 100vh; }
+    .sidebar { display: flex; flex-direction: column; border-right: 1px solid var(--line); background: #1b2027; padding: 18px 12px; }
+    .sidebar .brand { padding: 2px 9px 22px; }
+    .sidebar .brand-mark { width: 100px; height: 34px; }
+    .nav-label { padding: 12px 10px 7px; color: #71808e; text-transform: uppercase; letter-spacing: .11em; font-size: 10px; font-weight: 700; }
+    .nav-btn { width: 100%; display: flex; align-items: center; gap: 11px; padding: 10px; margin: 2px 0; color: #aeb9c4; text-align: left; background: transparent; border: 0; border-radius: 6px; }
+    .nav-btn:hover { background: #252d36; color: var(--text); }
+    .nav-btn.active { color: white; background: #123d5c; box-shadow: inset 2px 0 var(--blue); }
+    .nav-icon { width: 18px; text-align: center; color: #93a3b2; }
+    .nav-unread-badge { display: inline-flex; min-width: 18px; height: 18px; align-items: center; justify-content: center; margin-left: auto; padding: 0 5px; border-radius: 99px; color: #fff; background: #d94343; font-size: 10px; font-weight: 750; line-height: 1; }
+    .sidebar-bottom { margin-top: auto; border-top: 1px solid #303943; padding: 14px 8px 0; }
+    .user-chip { display: flex; align-items: center; gap: 9px; padding: 6px 2px 13px; }
+    .avatar { display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 auto; border-radius: 50%; color: #d9efff; background: #24577a; font-size: 12px; font-weight: 750; }
+    .user-chip strong { display: block; font-size: 12px; }
+    .user-chip small { display: block; color: var(--muted); font-size: 10px; }
+    .main { min-width: 0; }
+    .topbar { height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 28px; border-bottom: 1px solid var(--line); background: #1c2229; }
+    .topbar-title { font-weight: 680; }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .local-badge { border: 1px solid #40515f; border-radius: 20px; padding: 4px 9px; color: #9eb4c5; font-size: 10px; }
+    .local-badge button { margin-left: 4px; padding: 0; border: 0; color: #ffd1d1; background: none; font-size: inherit; text-decoration: underline; }
+    .content { max-width: 1440px; margin: 0 auto; padding: 28px; }
+    .page-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 22px; }
+    .page-heading h1 { margin: 3px 0 4px; font-size: 24px; letter-spacing: -.025em; }
+    .page-heading p { margin: 0; color: var(--muted); }
+    .heading-actions { display: flex; gap: 8px; }
+    .grid { display: grid; gap: 16px; }
+    .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 18px; }
+    .card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+    .stat-card { padding: 16px; }
+    .stat-label { color: var(--muted); font-size: 12px; }
+    .stat-value { margin-top: 5px; font-size: 26px; font-weight: 730; letter-spacing: -.03em; }
+    .stat-foot { margin-top: 2px; color: #82909d; font-size: 11px; }
+    .two-col { grid-template-columns: minmax(0, 1.4fr) minmax(250px, .8fr); }
+    .card-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 15px 17px; border-bottom: 1px solid var(--line); }
+    .card-header h2, .card-header h3 { margin: 0; font-size: 14px; }
+    .card-body { padding: 16px 17px; }
+    .task-list { display: grid; }
+    .task-row { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 12px; padding: 13px 17px; border-bottom: 1px solid #303943; }
+    .task-row:last-child { border-bottom: 0; }
+    .task-title { font-weight: 650; }
+    .task-title-line { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+    .new-task-badge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 99px; color: #fff; background: #b93636; font-size: 9px; font-weight: 750; line-height: 1.4; white-space: nowrap; }
+    .task-meta { color: var(--muted); font-size: 11px; margin-top: 3px; }
+    .schedule-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+    .schedule-week-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .schedule-week-label { min-width: 190px; text-align: center; font-weight: 650; }
+    .schedule-legend { display: flex; flex-wrap: wrap; gap: 8px; color: var(--muted); font-size: 11px; }
+    .schedule-legend span { display: inline-flex; align-items: center; gap: 5px; }
+    .schedule-dot { width: 10px; height: 10px; border-radius: 3px; }
+    .schedule-dot.office { background: #42b883; }
+    .schedule-dot.online { background: #1687d9; }
+    .schedule-dot.unavailable { background: #69737d; }
+    .schedule-person-card { overflow: hidden; margin-bottom: 14px; }
+    .schedule-person-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 13px 16px; border-bottom: 1px solid var(--line); }
+    .schedule-person-name { font-weight: 700; }
+    .schedule-own-label { margin-left: 6px; color: #7ebdec; font-size: 11px; font-weight: 500; }
+    .schedule-table-wrap { overflow: auto; max-height: 640px; }
+    .schedule-table { min-width: 800px; border-spacing: 0; }
+    .schedule-table th { position: sticky; top: 0; z-index: 2; text-align: center; }
+    .schedule-table th:first-child { left: 0; z-index: 3; min-width: 86px; text-align: left; }
+    .schedule-table td { min-width: 96px; padding: 5px; text-align: center; background: var(--panel); }
+    .schedule-table td:first-child { position: sticky; left: 0; z-index: 1; min-width: 86px; color: var(--muted); background: #1c2229; text-align: left; font-size: 11px; white-space: nowrap; }
+    .availability-cell { width: 100%; min-height: 30px; padding: 4px; border: 1px solid #48525d; border-radius: 5px; color: #bec7cf; background: #252d36; font-size: 10px; }
+    .availability-cell:disabled { opacity: 1; cursor: default; }
+    .availability-cell.office { border-color: #316a50; color: #a7e4c4; background: #18553844; }
+    .availability-cell.online { border-color: #315a78; color: #a1d4fa; background: #16466b44; }
+    .availability-cell.unavailable { border-color: #48525d; color: #bec7cf; background: #303943; }
+    .schedule-note { margin: 0 0 14px; }
+    .status { display: inline-flex; align-items: center; border: 1px solid; border-radius: 99px; padding: 3px 8px; font-size: 10px; white-space: nowrap; }
+    .status.todo { color: #c5a96e; border-color: #6b5936; background: #51412440; }
+    .status.progress { color: #73b9ed; border-color: #315a78; background: #16466b44; }
+    .status.done { color: #71d2a3; border-color: #316a50; background: #18553844; }
+    .profile-layout { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); align-items: start; }
+    .profile-hero { padding: 22px; }
+    .profile-person { display: flex; align-items: center; gap: 15px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+    .profile-person .avatar { width: 54px; height: 54px; font-size: 17px; }
+    .profile-person h2 { margin: 0; font-size: 19px; }
+    .profile-person p { margin: 2px 0 0; color: var(--muted); }
+    .detail-list { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
+    .detail-label { color: var(--muted); font-size: 11px; }
+    .detail-value { margin-top: 3px; font-weight: 600; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { padding: 11px 14px; color: #8d9ba8; background: #1c2229; text-transform: uppercase; letter-spacing: .06em; font-size: 10px; }
+    td { padding: 12px 14px; border-top: 1px solid #303943; vertical-align: middle; }
+    tr:hover td { background: #252d36; }
+    .table-main { font-weight: 650; overflow-wrap: anywhere; word-break: break-word; }
+    .table-sub { color: var(--muted); font-size: 11px; overflow-wrap: anywhere; word-break: break-word; }
+    .task-description-preview { display: block; width: 100%; max-width: 620px; min-width: 0; margin: 3px 0 0; padding: 0; border: 0; color: var(--muted); background: transparent; text-align: left; font-size: 11px; cursor: pointer; overflow-wrap: anywhere; word-break: break-word; }
+    .task-description-preview:hover { color: #d3e6f4; }
+    .task-description-preview span { color: #70baf0; white-space: nowrap; }
+    .task-description-full { color: #d4dce4; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .filter-row { display: flex; flex-wrap: wrap; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+    .filter-row input, .filter-row select { width: auto; min-width: 180px; padding: 8px 10px; }
+    .empty { padding: 30px 16px; text-align: center; color: var(--muted); }
+    .empty strong { display: block; margin-bottom: 5px; color: #c1cbd4; }
+    .file-layout { grid-template-columns: minmax(0,1fr) 300px; align-items: start; }
+    .file-main { min-width: 0; }
+    .file-list { position: sticky; top: 14px; overflow: hidden; }
+    .file-list-items { display: grid; max-height: 620px; overflow: auto; }
+    .file-list-item { display: block; width: 100%; padding: 12px 14px; border: 0; border-bottom: 1px solid #303943; color: var(--text); background: transparent; text-align: left; cursor: pointer; }
+    .file-list-item:last-child { border-bottom: 0; }
+    .file-list-item:hover, .file-list-item.active { background: #2a333d; }
+    .file-list-item.active { box-shadow: inset 2px 0 var(--blue); }
+    .file-list-name { display: block; font-size: 12px; font-weight: 650; overflow-wrap: anywhere; }
+    .file-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 5px 10px; margin-top: 6px; color: var(--muted); font-size: 10px; }
+    .file-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+    .viewer-stage { position: relative; display: flex; min-height: 420px; max-height: 70vh; justify-content: center; align-items: center; overflow: auto; border: 1px solid #c9cdd1; border-radius: 7px; color: #4a4f54; background: #fff; }
+    .viewer-stage.viewer-stage-3d { height: min(70vh,560px); min-height: 360px; overflow: hidden; }
+    .viewer-stage.pdf-viewer { display: flex; height: min(70vh,800px); min-height: 420px; max-height: none; flex-direction: column; justify-content: flex-start; align-items: stretch; overflow: hidden; background: #e7eaed; }
+    .pdf-toolbar { display: flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: 8px; padding: 8px; border-bottom: 1px solid #c9cdd1; background: #f7f8f9; }
+    .pdf-toolbar button { min-width: 34px; padding: 5px 8px; border: 1px solid #c9cdd1; border-radius: 5px; color: #30363b; background: #fff; }
+    .pdf-toolbar button:disabled { opacity: .45; cursor: default; }
+    .pdf-page-label { min-width: 90px; color: #454b51; text-align: center; font-size: 12px; }
+    .pdf-page-container { display: flex; flex: 1; min-height: 0; justify-content: center; align-items: flex-start; overflow: auto; padding: 14px; }
+    .pdf-page-container canvas { display: block; max-width: none; height: auto; background: #fff; box-shadow: 0 2px 8px #0003; }
+    .pdf-loading { margin: auto; padding: 20px; color: #525960; text-align: center; }
+    .viewer-stage img { display: block; max-width: 100%; max-height: 68vh; object-fit: contain; }
+    .viewer-stage iframe { display: block; width: 100%; height: 68vh; min-height: 420px; border: 0; background: #fff; }
+    .viewer-stage pre { width: 100%; align-self: stretch; margin: 0; padding: 20px; overflow: auto; color: #30363b; background: #fff; font: 12px/1.55 ui-monospace, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .viewer-stage canvas { display: block; width: 100%; height: 100%; min-height: 420px; cursor: grab; touch-action: none; }
+    .viewer-stage-3d canvas { flex: 1; min-height: 0; }
+    .viewer-stage canvas:active { cursor: grabbing; }
+    .viewer-format-note { position: absolute; right: 9px; bottom: 8px; max-width: calc(100% - 18px); padding: 3px 7px; border-radius: 4px; color: #606870; background: #ffffffd9; font-size: 10px; pointer-events: none; }
+    .viewer-message { padding: 28px; color: #606870; text-align: center; }
+    .viewer-message strong { display: block; margin-bottom: 6px; color: #343a40; }
+    .viewer-message p { margin: 0; }
+    .file-info { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .file-comments { margin-top: 14px; }
+    .file-list-empty { padding: 20px 14px; color: var(--muted); text-align: center; font-size: 12px; }
+    .comment-list { display: grid; gap: 10px; margin-top: 14px; }
+    .comment { padding: 10px; border-radius: 6px; background: #1a2027; }
+    .comment-head { display: flex; justify-content: space-between; gap: 10px; font-size: 11px; }
+    .comment time { color: #82909d; }
+    .comment p { margin: 5px 0 0; color: #c2cbd3; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .admin-grid { grid-template-columns: minmax(0,1.2fr) minmax(280px,.8fr); align-items: start; }
+    .settings-form { max-width: 620px; }
+    .notice { padding: 11px 13px; border: 1px solid #655634; border-radius: 6px; color: #d8c28d; background: #3b321f55; font-size: 11px; }
+    .modal-backdrop { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 20px; background: #080b0fbb; }
+    .modal { width: min(600px, 100%); max-height: min(92vh, 850px); overflow-y: auto; border: 1px solid #48545f; border-radius: 9px; background: var(--panel); box-shadow: 0 24px 80px #0009; }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; padding: 15px 18px; border-bottom: 1px solid var(--line); }
+    .modal-head h2 { margin: 0; font-size: 16px; }
+    .modal-body { padding: 18px; }
+    .modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 13px 18px; border-top: 1px solid var(--line); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+    .form-grid .full { grid-column: 1/-1; }
+    .toast { position: fixed; right: 22px; bottom: 20px; z-index: 50; max-width: min(420px, calc(100vw - 40px)); padding: 12px 16px; border: 1px solid #4b5b69; border-radius: 7px; background: #263440; box-shadow: 0 12px 35px #0008; }
+    .toast.error { border-color: #8f4d4d; background: #422b2b; }
+    .link { color: #6db8ee; text-decoration: none; }
+    .link:hover { text-decoration: underline; }
+    @media (max-width: 900px) {
+      .app-shell { grid-template-columns: 190px minmax(0,1fr); }
+      .content { padding: 22px 18px; }
+      .stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .two-col, .profile-layout, .file-layout, .admin-grid { grid-template-columns: minmax(0,1fr); }
+      .file-list { position: static; }
+      .file-list-items { max-height: 260px; }
+    }
+    @media (max-width: 620px) {
+      .app-shell { display: block; }
+      .sidebar { position: sticky; top: 0; z-index: 5; flex-direction: row; align-items: center; overflow-x: auto; padding: 8px; border-right: 0; border-bottom: 1px solid var(--line); scrollbar-width: none; }
+      .sidebar::-webkit-scrollbar { display: none; }
+      .sidebar .brand { padding: 0 4px; flex: 0 0 auto; }
+      .sidebar .brand-mark { width: 76px; height: 28px; }
+      .brand-caption, .nav-label, .sidebar-bottom { display: none; }
+      #main-nav { display: flex; flex: 0 0 auto; }
+      .nav-btn { width: auto; min-width: 42px; justify-content: center; padding: 9px; }
+      .nav-btn .nav-text { display: none; }
+      .topbar { height: 50px; padding: 0 14px; }
+      .content { padding: 18px 12px; }
+      .page-heading { align-items: flex-start; flex-wrap: wrap; }
+      .page-heading h1 { font-size: 21px; }
+      .heading-actions { flex-wrap: wrap; }
+      .local-badge { display: none; }
+      .local-badge.error { display: inline-flex; align-items: center; border-color: #6a3b3b; color: #ffaaaa; }
+      .task-row { padding: 12px; }
+      .stats { gap: 10px; }
+      .stat-card { padding: 13px; }
+      .stat-value { font-size: 22px; }
+      .form-grid { grid-template-columns: minmax(0,1fr); }
+      .form-grid .full { grid-column: auto; }
+      .file-layout { grid-template-columns: minmax(0,1fr); }
+      .viewer-stage { min-height: 300px; }
+      .viewer-stage.viewer-stage-3d { height: min(60vh,420px); min-height: 280px; }
+      .viewer-stage iframe, .viewer-stage canvas { min-height: 300px; }
+      .viewer-stage-3d canvas { min-height: 0; }
+      .login-wrap { padding: 16px; }
+      .login-card { padding: 24px 20px; }
+      .login-card .brand-mark { width: 136px; height: 36px; }
+      .login-card .brand-caption { font-size: 11px; }
+      .detail-list { grid-template-columns: minmax(0,1fr); }
+      .modal-backdrop { padding: 10px; }
+      .modal-body { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <section id="login-screen" class="login-wrap">
+    <div class="login-card">
+      <div class="brand"><img class="brand-mark" src="logo-transparent.png" alt="VELGO"><span class="brand-caption">/ R&amp;D PLATFORM</span></div>
+      <h1>Workspace</h1>
+      <p>Sign in to the VELGO team platform.</p>
+      <div class="login-actions">
+        <form id="employee-auth-form">
+          <div class="field">
+            <label for="login-user">Employee username or admin password</label>
+            <input id="login-user" type="text" autocomplete="username" placeholder="Enter username" required>
+          </div>
+          <button id="user-login" type="submit" class="btn btn-primary wide" disabled>Sign in</button>
+        </form>
+      </div>
+      <div id="login-cloud-status" class="cloud-connection" role="status" aria-live="polite">Connecting to Google Drive…</div>
+      <div class="demo-note">Sign-in is not server-side security. Anyone with the Apps Script deployment URL may access its Drive data. Do not store confidential information.</div>
+    </div>
+  </section>
+
+  <div id="app-screen" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="brand"><img class="brand-mark" src="logo-transparent.png" alt="VELGO"><span class="brand-caption">R&amp;D</span></div>
+      <nav id="main-nav"></nav>
+      <div class="sidebar-bottom">
+        <div class="user-chip"><div id="sidebar-avatar" class="avatar">V</div><div><strong id="sidebar-name"></strong><small id="sidebar-role"></small></div></div>
+        <button id="logout" class="btn btn-sm wide">Sign out</button>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><div id="topbar-title" class="topbar-title">Overview</div><div class="topbar-right"><span id="app-cloud-status" class="local-badge">● GOOGLE DRIVE</span><button id="mobile-logout" class="btn btn-sm">Sign out</button></div></header>
+      <div id="content" class="content"></div>
+    </main>
+  </div>
+  <div id="modal-root"></div>
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+  <input id="file-picker" class="hidden" type="file">
+
+  <script>
+    (() => {
+      "use strict";
+      const STORAGE_KEY = "velgo-rnd-platform-v1";
+      const TASK_FILE_DB_NAME = "velgo-rnd-task-files-v1";
+      const DRIVE_API_URL = "https://script.google.com/macros/s/AKfycbxjyzr4eiTfBls5pwyCCJVuMMq59FqQhEWroiab8R9sDnAmCq_OoYPpl79PphK7QrKY/exec";
+      const DEPARTMENTS = ["Mechanical Engineer", "Electrical Engineer", "Software Engineer", "Social Media Officer", "Web Site Officer", "CEO / Admin"];
+      const STATUSES = ["Pending", "In Progress", "Done"];
+      const TASK_DESCRIPTION_PREVIEW_LIMIT = 60;
+      const MAX_VIEWER_TRIANGLES = 8000;
+      const MAX_3D_PREVIEW_BYTES = 25*1024*1024;
+      const PDFJS_SCRIPT_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+      const PDFJS_WORKER_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      const STATUS_CLASS = { "Pending": "todo", "In Progress": "progress", "Done": "done" };
+      const NAV_ITEMS = [
+        ["dashboard", "⌂", "Overview"], ["profile", "◉", "Profile"], ["tasks", "☷", "Plan and Tasks"],
+        ["schedule", "▦", "Schedule"],
+        ["files", "▧", "Files and CAD"], ["admin", "⚙", "Administration"]
+      ];
+      const AVAILABILITY_OPTIONS = [
+        { value: "office", label: "In office" },
+        { value: "online", label: "Online only" },
+        { value: "unavailable", label: "Unavailable" }
+      ];
+      const $ = (selector, root = document) => root.querySelector(selector);
+      const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+      const id = () => (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
+      const initialState = () => ({
+        users: [
+          { id: "u-ceo", username: "alexey.volkov", firstName: "Alexey", lastName: "Volkov", birthDate: "1985-04-12", department: "CEO / Admin" },
+          { id: "u-mech", username: "irina.sokolova", firstName: "Irina", lastName: "Sokolova", birthDate: "1992-09-03", department: "Mechanical Engineer" },
+          { id: "u-elec", username: "dmitry.orlov", firstName: "Dmitry", lastName: "Orlov", birthDate: "1990-02-18", department: "Electrical Engineer" },
+          { id: "u-soft", username: "maria.kim", firstName: "Maria", lastName: "Kim", birthDate: "1995-11-27", department: "Software Engineer" }
+        ],
+        tasks: [
+          { id: "TASK-001", title: "Controller housing: revision B", description: "Check mounting clearances and prepare the updated CAD model.", deadline: "2026-11-25", assigneeId: "u-mech", department: "Mechanical Engineer", status: "In Progress", createdAt: new Date().toISOString() },
+          { id: "TASK-002", title: "Prototype power schematic", description: "Prepare the power schematic and component list.", deadline: "2026-11-30", assigneeId: "u-elec", department: "Electrical Engineer", status: "Pending", createdAt: new Date().toISOString() },
+          { id: "TASK-003", title: "Firmware bootloader test", description: "Check error handling during firmware updates.", deadline: "2026-12-03", assigneeId: "u-soft", department: "Software Engineer", status: "Done", createdAt: new Date().toISOString() }
+        ],
+        files: [],
+        availability: {},
+        driveUrl: "",
+        adminPassword: "admin123"
+      });
+      function loadState() {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
+          if (!parsed || !Array.isArray(parsed.users) || !Array.isArray(parsed.tasks) || !Array.isArray(parsed.files)) return initialState();
+          const restored = { ...initialState(), ...parsed };
+          if (!restored.availability || typeof restored.availability !== "object" || Array.isArray(restored.availability)) restored.availability = {};
+          const demoUsernameMigrations = {
+            "u-ceo": ["ceo", "alexey.volkov"],
+            "u-mech": ["engineer", "irina.sokolova"],
+            "u-elec": ["electro", "dmitry.orlov"],
+            "u-soft": ["developer", "maria.kim"]
+          };
+          let migrated = false;
+          restored.users.forEach(user => {
+            const migration = demoUsernameMigrations[user.id];
+            if (migration && user.username === migration[0]) {
+              user.username = migration[1];
+              migrated = true;
+            }
+          });
+          const legacyStatuses = { "Не выполнено": "Pending", "В процессе": "In Progress", "Сделано": "Done" };
+          restored.tasks.forEach(task => {
+            if (legacyStatuses[task.status]) {
+              task.status = legacyStatuses[task.status];
+              migrated = true;
+            }
+          });
+          if (migrated) {
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(restored)); }
+            catch (error) { console.error("Could not save migrated demo usernames or task statuses.", error); }
+          }
+          return restored;
+        } catch (error) {
+          console.error("Could not read platform data from localStorage.", error);
+          return initialState();
+        }
+      }
+      let state = loadState();
+      let cloudReady = false;
+      let cloudLastError = null;
+      let cloudSaveQueue = Promise.resolve();
+      let session = null;
+      let activePage = "dashboard";
+      let scheduleWeekOffset = 0;
+      let selectedFileId = null;
+      let viewerObjectUrl = null;
+      let viewerCleanup = null;
+      let previewGeneration = 0;
+      const cadDecoderCache = new Map();
+      let decodedCadCache = null;
+      let pdfJsPromise = null;
+      let activePdfLoadingTask = null;
+      let activePdfRenderTask = null;
+      let toastTimer;
+      function setCloudStatus(message, error = false, retry = false) {
+        const status = `${escapeHtml(message)}${retry ? ` <button type="button" data-cloud-retry>Retry</button>` : ""}`;
+        const loginStatus = $("#login-cloud-status");
+        const appStatus = $("#app-cloud-status");
+        if (loginStatus) {
+          loginStatus.innerHTML = status;
+          loginStatus.classList.toggle("error", error);
+        }
+        if (appStatus) {
+          appStatus.innerHTML = error ? `● DRIVE SYNC ERROR${retry ? ` <button type="button" data-cloud-retry>Retry</button>` : ""}` : `● ${escapeHtml(message.toUpperCase())}`;
+          appStatus.classList.toggle("error", error);
+        }
+        document.querySelectorAll("[data-cloud-retry]").forEach(button => button.addEventListener("click", initializeCloud));
+      }
+      function loadRemoteJsonp(action, params = {}) {
+        return new Promise((resolve, reject) => {
+          const callbackName = `__velgoCallback_${id().replace(/-/g, "")}`;
+          const script = document.createElement("script");
+          const query = new URLSearchParams({ action, callback: callbackName, ...params });
+          const cleanup = () => {
+            delete window[callbackName];
+            script.remove();
+            clearTimeout(timer);
+          };
+          const timer = setTimeout(() => { cleanup(); reject(new Error("Google Drive did not respond in time.")); }, 45000);
+          window[callbackName] = value => { cleanup(); resolve(value); };
+          script.onerror = () => { cleanup(); reject(new Error("Could not reach the Google Drive service.")); };
+          script.src = `${DRIVE_API_URL}?${query}`;
+          document.head.append(script);
+        });
+      }
+      function postCloudAction(action) {
+        return new Promise((resolve, reject) => {
+          const requestId = id();
+          const iframe = document.createElement("iframe");
+          const form = document.createElement("form");
+          const frameName = `velgo-cloud-${requestId.replace(/-/g, "")}`;
+          iframe.name = frameName;
+          iframe.className = "hidden";
+          iframe.setAttribute("aria-hidden", "true");
+          form.method = "POST";
+          form.action = DRIVE_API_URL;
+          form.target = frameName;
+          form.className = "hidden";
+          const payload = { ...action, requestId };
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = "payload";
+          input.value = JSON.stringify(payload);
+          form.append(input);
+          let settled = false;
+          const cleanup = () => {
+            window.removeEventListener("message", onMessage);
+            clearTimeout(timer);
+            iframe.remove();
+            form.remove();
+          };
+          const finish = (error, value) => {
+            if (settled) return;
+            settled = true;
+            cleanup();
+            error ? reject(error) : resolve(value);
+          };
+          const onMessage = event => {
+            if (event.data?.requestId !== requestId) return;
+            if (event.data.ok) finish(null, event.data.result);
+            else finish(new Error(event.data.error || "Google Drive rejected the request."));
+          };
+          const timer = setTimeout(() => finish(new Error("Google Drive did not confirm the save. Check the Apps Script deployment and try again.")), 60000);
+          window.addEventListener("message", onMessage);
+          document.body.append(iframe, form);
+          form.submit();
+        });
+      }
+      function stateForCloud() {
+        const cloudState = { ...state };
+        delete cloudState.adminPassword;
+        return cloudState;
+      }
+      function setCloudSaveStatus(promise) {
+        cloudSaveQueue = cloudSaveQueue.then(async () => {
+          setCloudStatus("Syncing to Drive");
+          await promise();
+          cloudLastError = null;
+          setCloudStatus("Drive synced");
+        }).catch(error => {
+          cloudLastError = error;
+          console.error("Could not synchronize platform data with Google Drive.", error);
+          setCloudStatus(error.message || "Drive sync failed", true, true);
+          notify(`Google Drive sync failed: ${error.message || "Unknown error."}`, true);
+        });
+        return cloudSaveQueue;
+      }
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          if (cloudReady) {
+            const snapshot = stateForCloud();
+            setCloudSaveStatus(() => postCloudAction({ action: "saveState", state: snapshot }));
+          }
+          return true;
+        } catch (error) {
+          console.error("Could not save platform data to localStorage.", error);
+          notify("Browser storage is full or unavailable. Reduce the amount of data and try again.", true);
+          return false;
+        }
+      }
+      async function blobToBase64(blob) {
+        const bytes = new Uint8Array(await blob.arrayBuffer());
+        let binary = "";
+        for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+          binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+        }
+        return btoa(binary);
+      }
+      async function initializeCloud() {
+        const loginButton = $("#user-login");
+        if (loginButton) loginButton.disabled = true;
+        setCloudStatus("Connecting to Drive");
+        try {
+          if (cloudReady) {
+            await cloudSaveQueue;
+            await postCloudAction({ action: "saveState", state: stateForCloud() });
+            cloudLastError = null;
+            setCloudStatus("Drive synced");
+            if (loginButton) loginButton.disabled = false;
+            return;
+          }
+          const envelope = await loadRemoteJsonp("load");
+          if (envelope !== null) {
+            if (!envelope.state || !Array.isArray(envelope.state.users) || !Array.isArray(envelope.state.tasks) || !Array.isArray(envelope.state.files)) {
+              throw new Error("The shared Drive data is invalid; it was not loaded.");
+            }
+            const localAdminPassword = state.adminPassword;
+            state = { ...initialState(), ...envelope.state, adminPassword: localAdminPassword };
+            if (!state.availability || typeof state.availability !== "object" || Array.isArray(state.availability)) state.availability = {};
+          }
+          const migratedFiles = await uploadExistingLocalFiles();
+          cloudReady = true;
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+          catch (error) { console.warn("Could not cache shared platform data in this browser.", error); }
+          if (envelope === null || migratedFiles) {
+            await postCloudAction({ action: "saveState", state: stateForCloud() });
+          }
+          setCloudStatus("Drive connected");
+          if (loginButton) loginButton.disabled = false;
+        } catch (error) {
+          cloudReady = false;
+          cloudLastError = error;
+          console.error("Could not initialize Google Drive storage.", error);
+          setCloudStatus(error.message || "Drive connection failed", true, true);
+        }
+      }
+      async function uploadExistingLocalFiles() {
+        let changed = false;
+        const records = [
+          ...state.files,
+          ...state.tasks.flatMap(task => Array.isArray(task.attachments) ? task.attachments : [])
+        ];
+        const seen = new Set();
+        for (const record of records) {
+          if (!record?.id || record.driveFileId || seen.has(record.id)) continue;
+          seen.add(record.id);
+          let blob;
+          try { blob = await getLocalStoredFileBlob(record.id); }
+          catch (error) {
+            console.warn(`Could not read local file ${record.id} for Drive migration.`, error);
+            continue;
+          }
+          if (!blob) continue;
+          const result = await postCloudAction({
+            action: "uploadFile",
+            name: record.name || "attachment",
+            mimeType: blob.type || record.type || "application/octet-stream",
+            base64: await blobToBase64(blob)
+          });
+          record.driveFileId = result.id;
+          changed = true;
+        }
+        return changed;
+      }
+      function getDriveFileId(localFileId) {
+        const file = state.files.find(item => item.id === localFileId);
+        if (file?.driveFileId) return file.driveFileId;
+        for (const task of state.tasks) {
+          const attachment = task.attachments?.find(item => item.id === localFileId);
+          if (attachment?.driveFileId) return attachment.driveFileId;
+        }
+        return null;
+      }
+      async function getLocalStoredFileBlob(fileId) {
+        const db = await openTaskFileDb();
+        return new Promise((resolve, reject) => {
+          const transaction = db.transaction("attachments", "readonly");
+          const request = transaction.objectStore("attachments").get(fileId);
+          request.onsuccess = () => resolve(request.result?.blob || null);
+          request.onerror = () => reject(request.error || new Error("Could not read the file."));
+          transaction.oncomplete = () => db.close();
+          transaction.onerror = () => { db.close(); reject(transaction.error || new Error("Could not read the file.")); };
+        });
+      }
+      function openTaskFileDb() {
+        if (!("indexedDB" in window)) return Promise.reject(new Error("IndexedDB is unavailable in this browser."));
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(TASK_FILE_DB_NAME, 1);
+          request.onupgradeneeded = () => {
+            if (!request.result.objectStoreNames.contains("attachments")) request.result.createObjectStore("attachments", { keyPath: "id" });
+          };
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error || new Error("Could not open file storage."));
+          request.onblocked = () => reject(new Error("File storage is in use by another tab. Close other app tabs and try again."));
+        });
+      }
+      async function storeTaskAttachments(files) {
+        if (!files.length) return;
+        const uploaded = [];
+        try {
+          for (const item of files) {
+            if (item.file.size > 20 * 1024 * 1024) throw new Error("Files larger than 20 MB are not supported.");
+            const result = await postCloudAction({
+              action: "uploadFile",
+              name: item.file.name,
+              mimeType: item.file.type || "application/octet-stream",
+              base64: await blobToBase64(item.file)
+            });
+            item.driveFileId = result.id;
+            if (item.metadata) item.metadata.driveFileId = result.id;
+            uploaded.push(result.id);
+          }
+        } catch (error) {
+          await Promise.all(uploaded.map(fileId => postCloudAction({ action: "deleteFile", fileId }).catch(cleanupError => console.error("Could not clean up an incomplete Drive upload.", cleanupError))));
+          throw error;
+        }
+        try {
+          const db = await openTaskFileDb();
+          await new Promise((resolve, reject) => {
+            const transaction = db.transaction("attachments", "readwrite");
+            const store = transaction.objectStore("attachments");
+            files.forEach(item => store.put({ id: item.id, blob: item.file }));
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error || new Error("Could not save local file cache."));
+            transaction.onabort = () => reject(transaction.error || new Error("Saving local file cache was cancelled."));
+          });
+          db.close();
+        } catch (error) {
+          console.warn("Files are stored in Drive but could not be cached in this browser.", error);
+          notify("File uploaded to Drive; this browser could not cache a local copy.", true);
+        }
+      }
+      async function deleteTaskAttachments(ids) {
+        if (!ids.length) return;
+        const db = await openTaskFileDb();
+        return new Promise((resolve, reject) => {
+          const transaction = db.transaction("attachments", "readwrite");
+          const store = transaction.objectStore("attachments");
+          ids.forEach(fileId => store.delete(fileId));
+          transaction.oncomplete = () => { db.close(); resolve(); };
+          transaction.onerror = () => { db.close(); reject(transaction.error || new Error("Could not delete attachments.")); };
+          transaction.onabort = () => { db.close(); reject(transaction.error || new Error("Deleting files was cancelled.")); };
+        });
+      }
+      async function downloadTaskAttachment(fileId, fileName) {
+        const blob = await getStoredFileBlob(fileId);
+        if (!blob) throw new Error("File contents are not available in Google Drive.");
+        const objectUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = objectUrl;
+        link.download = fileName;
+        document.body.append(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      }
+      async function getStoredFileBlob(fileId) {
+        try {
+          const localBlob = await getLocalStoredFileBlob(fileId);
+          if (localBlob) return localBlob;
+        } catch (error) {
+          console.warn("Local file cache unavailable; trying Google Drive.", error);
+        }
+        const driveFileId = getDriveFileId(fileId);
+        if (!driveFileId) return null;
+        const response = await loadRemoteJsonp("file", { fileId: driveFileId });
+        if (!response?.base64) throw new Error("Google Drive returned no file content.");
+        const binary = atob(response.base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+        const blob = new Blob([bytes], { type: response.mimeType || "application/octet-stream" });
+        try {
+          const db = await openTaskFileDb();
+          await new Promise((resolve, reject) => {
+            const transaction = db.transaction("attachments", "readwrite");
+            transaction.objectStore("attachments").put({ id: fileId, blob });
+            transaction.oncomplete = resolve;
+            transaction.onerror = () => reject(transaction.error || new Error("Could not cache downloaded file."));
+            transaction.onabort = () => reject(transaction.error || new Error("Could not cache downloaded file."));
+          });
+          db.close();
+        } catch (error) {
+          console.warn("Could not cache downloaded Drive file.", error);
+        }
+        return blob;
+      }
+      function notify(message, error = false) {
+        const toast = $("#toast");
+        toast.textContent = message;
+        toast.classList.toggle("error", error);
+        toast.classList.remove("hidden");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.add("hidden"), 3800);
+      }
+      const userById = userId => state.users.find(user => user.id === userId);
+      const isAdmin = () => Boolean(session?.isAdmin);
+      const canManage = () => !isAdmin() && session?.department === "CEO / Admin";
+      const displayName = user => [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.username || "User";
+      const initials = user => `${user?.firstName?.[0] || user?.username?.[0] || "V"}${user?.lastName?.[0] || ""}`.toUpperCase();
+      const fmtDate = date => date ? new Date(`${date}T00:00:00`).toLocaleDateString("en-GB") : "—";
+      const statusBadge = status => `<span class="status ${STATUS_CLASS[status] || "todo"}">${escapeHtml(status)}</span>`;
+      function renderLogin() {
+        $("#login-screen").classList.remove("hidden");
+        $("#app-screen").classList.add("hidden");
+      }
+      function login() {
+        const username = $("#login-user").value.trim();
+        const adminMode = username === state.adminPassword;
+        if (adminMode) {
+          session = { isAdmin: true, username: "admin", firstName: "System", lastName: "Admin", department: "CEO / Admin" };
+        } else {
+          const user = state.users.find(item => item.username.toLowerCase() === username.toLowerCase());
+          if (!user) { notify("No profile found with that username. Check your username or contact an administrator.", true); return; }
+          session = { ...user, isAdmin: false };
+        }
+        activePage = adminMode ? "admin" : "dashboard";
+        renderApp();
+      }
+      function logout() { session = null; renderLogin(); }
+      function unreadAssignedTasks() {
+        return isAdmin() ? [] : state.tasks.filter(task => task.assigneeId === session.id && task.assigneeViewed === false);
+      }
+      function markAssignedTasksViewed() {
+        const unread = unreadAssignedTasks();
+        if (!unread.length) return;
+        unread.forEach(task => { task.assigneeViewed = true; });
+        if (!saveState()) unread.forEach(task => { task.assigneeViewed = false; });
+      }
+      function renderApp() {
+        if (!session) return renderLogin();
+        if (isAdmin() && activePage !== "admin") activePage = "admin";
+        if (!isAdmin() && activePage === "admin") activePage = "dashboard";
+        if (activePage === "tasks") markAssignedTasksViewed();
+        $("#login-screen").classList.add("hidden");
+        $("#app-screen").classList.remove("hidden");
+        $("#sidebar-avatar").textContent = initials(session);
+        $("#sidebar-name").textContent = displayName(session);
+        $("#sidebar-role").textContent = isAdmin() ? "System Administrator" : session.department;
+        const unreadCount = unreadAssignedTasks().length;
+        $("#main-nav").innerHTML = NAV_ITEMS.filter(([key]) => isAdmin() ? key === "admin" : key !== "admin").map(([key, icon, title]) =>
+          `<button class="nav-btn ${activePage === key ? "active" : ""}" data-page="${key}" aria-label="${key === "tasks" && unreadCount ? `${title}, new tasks: ${unreadCount}` : title}"><span class="nav-icon">${icon}</span><span class="nav-text">${title}</span>${key === "tasks" && unreadCount ? `<span class="nav-unread-badge" aria-hidden="true">${unreadCount > 9 ? "9+" : unreadCount}</span>` : ""}</button>`
+        ).join("");
+        $("#main-nav").querySelectorAll("[data-page]").forEach(button => button.addEventListener("click", () => { activePage = button.dataset.page; renderApp(); }));
+        const title = NAV_ITEMS.find(([key]) => key === activePage)?.[2] || "Overview";
+        $("#topbar-title").textContent = title;
+        const pages = { dashboard: renderDashboard, profile: renderProfile, tasks: renderTasks, schedule: renderSchedule, files: renderFiles, admin: renderAdmin };
+        (pages[activePage] || renderDashboard)();
+      }
+      function pageHeading(kicker, title, description, actions = "") {
+        return `<div class="page-heading"><div><div class="eyebrow">${escapeHtml(kicker)}</div><h1>${escapeHtml(title)}</h1><p>${escapeHtml(description)}</p></div><div class="heading-actions">${actions}</div></div>`;
+      }
+      function visibleTasks() { return canManage() ? state.tasks : state.tasks.filter(task => task.assigneeId === session.id || task.department === session.department); }
+      function renderDashboard() {
+        const tasks = visibleTasks();
+        const open = tasks.filter(task => task.status !== "Done").length;
+        const inProgress = tasks.filter(task => task.status === "In Progress").length;
+        const done = tasks.filter(task => task.status === "Done").length;
+        const users = state.users.length;
+        const recent = [...tasks].sort((a,b) => Number(isNewForAssignee(b))-Number(isNewForAssignee(a)) || (a.deadline || "").localeCompare(b.deadline || "")).slice(0, 5);
+        $("#content").innerHTML = `${pageHeading("Workspace", `Welcome, ${displayName(session).split(" ")[0]}`, "A summary of projects, tasks, and team activity.", canManage() ? '<button class="btn btn-primary" data-action="new-task">＋ New Task</button>' : "")}
+          <div class="grid stats">
+            ${stat("Active Tasks", open, `${inProgress} in progress`)}
+            ${stat("Completed", done, "Finished tasks")}
+            ${stat("Project Files", state.files.length, "Registered in the system")}
+            ${stat("Employees", users, "Team profiles")}
+          </div>
+          <div class="grid two-col">
+            <section class="card"><div class="card-header"><h2>Upcoming Tasks</h2><button class="btn btn-sm" data-goto="tasks">All Tasks →</button></div>
+              ${recent.length ? `<div class="task-list">${recent.map(taskRow).join("")}</div>` : empty("No tasks yet", "Create the first task for the team.")}</section>
+            <section class="card"><div class="card-header"><h2>Quick Access</h2></div><div class="card-body">
+              <p class="muted" style="margin-top:0">Team documents and engineering files.</p>
+              ${state.driveUrl ? `<a class="btn wide" href="${safeUrl(state.driveUrl)}" target="_blank" rel="noopener noreferrer">↗ Open Google Drive</a>` : `<div class="notice">Google Drive link is not set up yet${isAdmin() ? "." : " — contact an administrator."}</div>`}
+              <button class="btn wide" style="margin-top:9px" data-goto="files">▧ Go to Project Files</button>
+              <div style="margin-top:19px"><div class="eyebrow">YOUR ROLE</div><div style="margin-top:5px;font-weight:650">${escapeHtml(isAdmin() ? "System Admin" : session.department)}</div></div>
+            </div></section>
+          </div>`;
+        wirePageActions();
+      }
+      function stat(label, value, foot) { return `<section class="card stat-card"><div class="stat-label">${label}</div><div class="stat-value">${value}</div><div class="stat-foot">${foot}</div></section>`; }
+      function isNewForAssignee(task) { return !isAdmin() && task.assigneeId === session.id && task.assigneeViewed === false; }
+      function taskRow(task) {
+        const assignee = userById(task.assigneeId);
+        return `<div class="task-row"><div><div class="task-title-line"><span class="task-title">${escapeHtml(task.title)}</span>${isNewForAssignee(task) ? `<span class="new-task-badge">New Task</span>` : ""}</div><div class="task-meta">${escapeHtml(task.id)} · ${escapeHtml(assignee ? displayName(assignee) : task.department)} · due ${fmtDate(task.deadline)}</div></div>${statusBadge(task.status)}</div>`;
+      }
+      function taskDescription(task) {
+        const description = String(task.description || "");
+        if (description.length <= TASK_DESCRIPTION_PREVIEW_LIMIT) return `<div class="table-sub">${escapeHtml(description)}</div>`;
+        const preview = `${description.slice(0, TASK_DESCRIPTION_PREVIEW_LIMIT).trimEnd()}…`;
+        return `<button type="button" class="task-description-preview" data-read-task-description="${escapeHtml(task.id)}" aria-label="Open full description for task ${escapeHtml(task.id)}">${escapeHtml(preview)} <span>Read full description</span></button>`;
+      }
+      function openTaskDescription(taskId) {
+        const task = state.tasks.find(item => item.id === taskId);
+        if (!task) return;
+        $("#modal-root").innerHTML = `<div class="modal-backdrop"><section class="modal" role="dialog" aria-modal="true" aria-label="Task description"><div class="modal-head"><div><div class="eyebrow">${escapeHtml(task.id)}</div><h2 style="margin-top:3px">${escapeHtml(task.title)}</h2></div><button type="button" class="btn btn-sm" data-close aria-label="Close">✕</button></div><div class="modal-body"><div class="task-description-full">${escapeHtml(task.description || "")}</div></div><div class="modal-foot"><button type="button" class="btn" data-close>Close</button></div></section></div>`;
+        $("#modal-root").querySelectorAll("[data-close]").forEach(button => button.addEventListener("click", closeModal));
+        $("#modal-root").querySelector(".modal-backdrop").addEventListener("click", event => { if (event.target.classList.contains("modal-backdrop")) closeModal(); });
+      }
+      function empty(title, text) { return `<div class="empty"><strong>${escapeHtml(title)}</strong>${escapeHtml(text)}</div>`; }
+      function renderProfile() {
+        const current = isAdmin() ? null : userById(session.id);
+        const tasks = current ? state.tasks.filter(task => task.assigneeId === current.id) : [];
+        $("#content").innerHTML = `${pageHeading("Employee Profile", "My Profile", "Personal details and assigned tasks.")}
+          ${current ? `<div class="grid profile-layout"><section class="card profile-hero"><div class="profile-person"><div class="avatar">${escapeHtml(initials(current))}</div><div><h2>${escapeHtml(displayName(current))}</h2><p>${escapeHtml(current.department)}</p></div></div><div class="detail-list">
+            <div><div class="detail-label">Username</div><div class="detail-value">${escapeHtml(current.username)}</div></div>
+            <div><div class="detail-label">Date of Birth</div><div class="detail-value">${fmtDate(current.birthDate)}</div></div>
+            <div><div class="detail-label">Department</div><div class="detail-value">${escapeHtml(current.department)}</div></div>
+            <div><div class="detail-label">Profile ID</div><div class="detail-value">${escapeHtml(current.id)}</div></div>
+          </div></section><section class="card"><div class="card-header"><h2>Assigned Tasks</h2><span class="muted">${tasks.length}</span></div>
+            ${tasks.length ? `<div class="task-list">${tasks.map(taskRow).join("")}</div>` : empty("No assigned tasks", "New tasks will appear here.")}</section></div>` :
+            `<div class="notice">The System Admin account is not an employee profile. Sign in with an employee account to view profile details.</div>`}`;
+      }
+      function renderTasks() {
+        const tasks = visibleTasks();
+        const rows = tasks.map(task => {
+          const assignee = userById(task.assigneeId);
+          const canChange = task.assigneeId === session.id && !isAdmin();
+          const searchText = `${task.id} ${task.title} ${task.description || ""} ${displayName(assignee)}`.toLocaleLowerCase("en");
+          const statusControl = canManage()
+            ? `<select class="task-status-select" data-task-status="${escapeHtml(task.id)}" aria-label="Status for task ${escapeHtml(task.id)}">${STATUSES.map(status => `<option value="${escapeHtml(status)}" ${status === task.status ? "selected" : ""}>${escapeHtml(status)}</option>`).join("")}</select>`
+            : canChange && task.status === "Pending"
+              ? `<button class="btn btn-sm" data-status-task="${escapeHtml(task.id)}">Start</button>`
+              : "";
+          const attachmentList = (task.attachments || []).map(file => `<button type="button" class="btn btn-sm" data-download-task-file="${escapeHtml(file.id)}" data-file-name="${escapeHtml(file.name)}">↓ ${escapeHtml(file.name)}</button>`).join(" ");
+          return `<tr data-search="${escapeHtml(searchText)}" data-status="${escapeHtml(task.status)}"><td><span class="table-main">${escapeHtml(task.id)}</span></td><td><div class="table-main">${escapeHtml(task.title)}</div>${taskDescription(task)}${attachmentList ? `<div class="file-actions">${attachmentList}</div>` : ""}</td><td>${escapeHtml(assignee ? displayName(assignee) : task.department)}</td><td>${fmtDate(task.deadline)}</td><td>${statusBadge(task.status)}</td><td>${statusControl}</td></tr>`;
+        }).join("");
+        $("#content").innerHTML = `${pageHeading("Planning", "Plan and Tasks", canManage() ? "Create tasks and track team progress." : "Tasks assigned to your profile and department.", canManage() ? '<button class="btn btn-primary" data-action="new-task">＋ New Task</button>' : "")}
+          <section class="card"><div class="filter-row"><input id="task-search" type="search" placeholder="Search by ID or title…"><select id="task-filter"><option value="">All statuses</option>${STATUSES.map(status => `<option>${status}</option>`).join("")}</select></div>
+          <div class="table-wrap"><table><thead><tr><th>ID</th><th>Task</th><th>Assignee</th><th>Deadline</th><th>Status</th><th>${canManage() ? "Change Status" : "Action"}</th></tr></thead><tbody id="tasks-body">${rows || `<tr><td colspan="6">${empty("No tasks found", canManage() ? "Create the first task." : "Contact your manager to get assigned tasks.")}</td></tr>`}</tbody></table></div></section>`;
+        $("#task-search").addEventListener("input", filterTasks);
+        $("#task-filter").addEventListener("change", filterTasks);
+        $("#content").querySelectorAll("[data-status-task]").forEach(button => button.addEventListener("click", () => updateTaskStatus(button.dataset.statusTask, "In Progress")));
+        $("#content").querySelectorAll("[data-task-status]").forEach(select => select.addEventListener("change", () => updateTaskStatus(select.dataset.taskStatus, select.value)));
+        $("#content").querySelectorAll("[data-read-task-description]").forEach(button => button.addEventListener("click", () => openTaskDescription(button.dataset.readTaskDescription)));
+        $("#content").querySelectorAll("[data-download-task-file]").forEach(button => button.addEventListener("click", async () => {
+          try { await downloadTaskAttachment(button.dataset.downloadTaskFile, button.dataset.fileName); }
+          catch (error) { console.error("Could not download task file.", error); notify(error.message || "Could not download the file.", true); }
+        }));
+        wirePageActions();
+      }
+      function filterTasks() {
+        const search = $("#task-search").value.toLocaleLowerCase("en");
+        const status = $("#task-filter").value;
+        $("#tasks-body").querySelectorAll("tr[data-search]").forEach(row => row.classList.toggle("hidden", !(row.dataset.search.includes(search) && (!status || row.dataset.status === status))));
+      }
+      function scheduleDateKey(date) {
+        return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+      }
+      function getScheduleWeek(offset) {
+        const monday = new Date();
+        monday.setHours(0,0,0,0);
+        monday.setDate(monday.getDate() - ((monday.getDay()+6)%7) + offset*7);
+        return Array.from({ length: 7 }, (_,index) => {
+          const date = new Date(monday);
+          date.setDate(monday.getDate()+index);
+          return date;
+        });
+      }
+      function renderSchedule() {
+        const dates = getScheduleWeek(scheduleWeekOffset);
+        const firstDate = dates[0].toLocaleDateString("en-GB",{day:"numeric",month:"long"});
+        const lastDate = dates[6].toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+        const ownUser = isAdmin() ? null : userById(session.id);
+        const users = [...state.users].sort((a,b) => {
+          if (a.id === ownUser?.id) return -1;
+          if (b.id === ownUser?.id) return 1;
+          return displayName(a).localeCompare(displayName(b),"en");
+        });
+        const headers = dates.map(date => `<th scope="col">${date.toLocaleDateString("en-GB",{weekday:"short"})}<br>${date.toLocaleDateString("en-GB",{day:"2-digit",month:"2-digit"})}</th>`).join("");
+        const people = users.map(user => {
+          const canEdit = user.id === ownUser?.id;
+          const rows = Array.from({ length: 17 }, (_,index) => {
+            const hour = index+7;
+            const nextHour = String(hour+1).padStart(2,"0");
+            const cells = dates.map(date => {
+              const dateKey = scheduleDateKey(date);
+              const value = state.availability?.[user.id]?.[dateKey]?.[hour] || "";
+              const option = AVAILABILITY_OPTIONS.find(item => item.value === value);
+              const accessible = `${displayName(user)}, ${date.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})}, ${String(hour).padStart(2,"0")}:00–${nextHour}:00${option ? `: ${option.label}` : ": Not set"}`;
+              return `<td><button type="button" class="availability-cell${option ? ` ${option.value}` : ""}" data-availability-cell data-user-id="${escapeHtml(user.id)}" data-date="${dateKey}" data-hour="${hour}" aria-label="${escapeHtml(accessible)}" title="${canEdit ? "Click to change availability" : escapeHtml(option?.label || "Not set")}" ${canEdit ? "" : "disabled"}>${option?.label || "—"}</button></td>`;
+            }).join("");
+            return `<tr><td>${String(hour).padStart(2,"0")}:00–${nextHour}:00</td>${cells}</tr>`;
+          }).join("");
+          return `<section class="card schedule-person-card"><div class="schedule-person-head"><div class="schedule-person-name">${escapeHtml(displayName(user))}${canEdit ? `<span class="schedule-own-label">Your Schedule</span>` : ""}</div><span class="muted">${escapeHtml(user.department)}</span></div><div class="schedule-table-wrap"><table class="schedule-table"><thead><tr><th scope="col">Time</th>${headers}</tr></thead><tbody>${rows}</tbody></table></div></section>`;
+        }).join("");
+        $("#content").innerHTML = `${pageHeading("Team Availability", "Schedule", "Set your availability by the hour. Everyone can view the team schedule; you can only edit your own.")}
+          <div class="schedule-toolbar"><div class="schedule-week-controls"><button class="btn btn-sm" type="button" data-week-shift="-1" aria-label="Previous week">←</button><span class="schedule-week-label">${firstDate} — ${lastDate}</span><button class="btn btn-sm" type="button" data-week-shift="1" aria-label="Next week">→</button><button class="btn btn-sm" type="button" data-week-today>This Week</button></div><div class="schedule-legend"><span><i class="schedule-dot office"></i>In office</span><span><i class="schedule-dot online"></i>Online only</span><span><i class="schedule-dot unavailable"></i>Unavailable</span></div></div>
+          ${isAdmin() ? `<div class="notice schedule-note">The System Admin can view the schedule but cannot edit employee availability.</div>` : `<div class="muted schedule-note">Click cells in your schedule to cycle through availability options. An empty cell means no availability has been set. Hourly slots: 07:00–08:00 … 23:00–24:00.</div>`}
+          <div class="notice schedule-note">Availability and schedule updates are shared with the team through Google Drive.</div>
+          ${people || empty("No employees yet","The schedule will appear after employee profiles are added.")}`;
+        $("#content").querySelectorAll("[data-week-shift]").forEach(button => button.addEventListener("click", () => {
+          scheduleWeekOffset += Number(button.dataset.weekShift);
+          renderApp();
+        }));
+        $("#content").querySelector("[data-week-today]").addEventListener("click", () => {
+          scheduleWeekOffset = 0;
+          renderApp();
+        });
+        $("#content").querySelectorAll("[data-availability-cell]:not(:disabled)").forEach(button => button.addEventListener("click", () => {
+          if (isAdmin() || button.dataset.userId !== session?.id) {
+            notify("You can only edit your own schedule.", true);
+            return;
+          }
+          const { userId, date, hour } = button.dataset;
+          const previous = state.availability?.[userId]?.[date]?.[hour] || "";
+          const currentIndex = AVAILABILITY_OPTIONS.findIndex(option => option.value === previous);
+          const next = AVAILABILITY_OPTIONS[(currentIndex+1)%AVAILABILITY_OPTIONS.length];
+          if (!state.availability[userId]) state.availability[userId] = {};
+          if (!state.availability[userId][date]) state.availability[userId][date] = {};
+          state.availability[userId][date][hour] = next.value;
+          if (!saveState()) {
+            if (previous) state.availability[userId][date][hour] = previous;
+            else delete state.availability[userId][date][hour];
+            return;
+          }
+          const dateObject = new Date(`${date}T12:00:00`);
+          const accessible = `${displayName(session)}, ${dateObject.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})}, ${String(Number(hour)).padStart(2,"0")}:00–${String(Number(hour)+1).padStart(2,"0")}:00: ${next.label}`;
+          button.className = `availability-cell ${next.value}`;
+          button.textContent = next.label;
+          button.setAttribute("aria-label",accessible);
+          button.title = "Click to change availability";
+        }));
+      }
+      function updateTaskStatus(taskId, status) {
+        const task = state.tasks.find(item => item.id === taskId);
+        if (!task) return;
+        if (!STATUSES.includes(status)) { notify("Unknown task status selected.", true); renderApp(); return; }
+        if (canManage()) {
+          task.status = status;
+        } else if (status === "In Progress" && task.assigneeId === session.id && task.status === "Pending") {
+          task.status = status;
+        } else {
+          notify("Only the task's assignee or the CEO can change its status.", true);
+          renderApp();
+          return;
+        }
+        if (!saveState()) return;
+        renderApp();
+        notify("Task status updated.");
+      }
+      function safeUrl(url) {
+        try { const parsed = new URL(url); return ["https:", "http:"].includes(parsed.protocol) ? escapeHtml(parsed.href) : "#"; }
+        catch { return "#"; }
+      }
+      function fileTypeFor(file) {
+        const ext = (file.name.split(".").pop() || "").toLowerCase();
+        if (["stl", "step", "stp", "sldprt", "sldasm", "3mf"].includes(ext)) return "ENG-3D";
+        if (["hex", "bin", "ino", "elf"].includes(ext)) return "ENG-SOFT";
+        if (["sch", "pcb", "brd"].includes(ext)) return "ENG-ELEC";
+        return "DOC-GENERAL";
+      }
+      function fileExtension(file) { return (file.name.split(".").pop() || "").toLowerCase(); }
+      function formatFileSize(bytes) {
+        return bytes < 1024 ? `${bytes} B` : bytes < 1024*1024 ? `${(bytes/1024).toFixed(1)} KB` : `${(bytes/1024/1024).toFixed(1)} MB`;
+      }
+      function clearViewerResources() {
+        previewGeneration += 1;
+        if (viewerCleanup) viewerCleanup();
+        viewerCleanup = null;
+        if (viewerObjectUrl) URL.revokeObjectURL(viewerObjectUrl);
+        viewerObjectUrl = null;
+      }
+      function loadPdfJs() {
+        if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+        if (!pdfJsPromise) {
+          pdfJsPromise = new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = PDFJS_SCRIPT_URL;
+            script.async = true;
+            script.onload = () => window.pdfjsLib
+              ? resolve(window.pdfjsLib)
+              : reject(new Error("PDF.js loaded, but the library is unavailable."));
+            script.onerror = () => {
+              pdfJsPromise = null;
+              reject(new Error("Could not load the PDF viewer. Check your internet connection."));
+            };
+            document.head.append(script);
+          });
+        }
+        return pdfJsPromise;
+      }
+      async function renderPdfFile(blob, preview, generation) {
+        preview.classList.add("pdf-viewer");
+        preview.innerHTML = `<div class="pdf-toolbar"><button type="button" data-pdf-prev aria-label="Previous page">←</button><span class="pdf-page-label" data-pdf-page>Loading…</span><button type="button" data-pdf-next aria-label="Next page">→</button><button type="button" data-pdf-zoom-out aria-label="Zoom out">−</button><button type="button" data-pdf-zoom-in aria-label="Zoom in">＋</button></div><div class="pdf-page-container"><div class="pdf-loading">Opening PDF locally in your browser…</div></div>`;
+        const pdfjs = await loadPdfJs();
+        if (generation !== previewGeneration || !preview.isConnected) return;
+        pdfjs.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
+        const loadingTask = pdfjs.getDocument({ data: new Uint8Array(await blob.arrayBuffer()), isEvalSupported: false });
+        activePdfLoadingTask = loadingTask;
+        let renderToken = 0;
+        let resizeFrame = 0;
+        let resizeObserver = null;
+        viewerCleanup = () => {
+          if (resizeObserver) resizeObserver.disconnect();
+          cancelAnimationFrame(resizeFrame);
+          renderToken++;
+          if (activePdfRenderTask) {
+            activePdfRenderTask.cancel();
+            activePdfRenderTask = null;
+          }
+          if (activePdfLoadingTask === loadingTask) activePdfLoadingTask = null;
+          loadingTask.destroy().catch(error => {
+            if (error?.name !== "AbortException" && error?.message !== "Worker was destroyed") console.error("Could not close the PDF viewer.", error);
+          });
+        };
+        const pdf = await loadingTask.promise;
+        if (generation !== previewGeneration || !preview.isConnected) {
+          if (activePdfLoadingTask === loadingTask) activePdfLoadingTask = null;
+          loadingTask.destroy().catch(error => console.error("Could not close the stale PDF viewer.", error));
+          return;
+        }
+        let pageNumber = 1;
+        let zoom = 1;
+        const pageContainer = preview.querySelector(".pdf-page-container");
+        const renderPage = async () => {
+          const token = ++renderToken;
+          if (activePdfRenderTask) {
+            activePdfRenderTask.cancel();
+            activePdfRenderTask = null;
+          }
+          const page = await pdf.getPage(pageNumber);
+          if (token !== renderToken || generation !== previewGeneration || !preview.isConnected) return;
+          const baseViewport = page.getViewport({ scale: 1 });
+          const fitScale = Math.min(1,Math.max(.25,(pageContainer.clientWidth-28)/baseViewport.width));
+          const scale = fitScale*zoom;
+          const viewport = page.getViewport({ scale });
+          const ratio = Math.min(window.devicePixelRatio || 1,2);
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.ceil(viewport.width*ratio);
+          canvas.height = Math.ceil(viewport.height*ratio);
+          canvas.style.width = `${viewport.width}px`;
+          const context = canvas.getContext("2d");
+          pageContainer.replaceChildren(canvas);
+          preview.querySelector("[data-pdf-page]").textContent = `Page ${pageNumber} of ${pdf.numPages}`;
+          preview.querySelector("[data-pdf-prev]").disabled = pageNumber <= 1;
+          preview.querySelector("[data-pdf-next]").disabled = pageNumber >= pdf.numPages;
+          const task = page.render({ canvasContext: context, viewport, transform: ratio === 1 ? null : [ratio,0,0,ratio,0,0] });
+          activePdfRenderTask = task;
+          try { await task.promise; }
+          catch (error) {
+            if (error?.name !== "RenderingCancelledException") throw error;
+          }
+          if (activePdfRenderTask === task) activePdfRenderTask = null;
+        };
+        preview.querySelector("[data-pdf-prev]").addEventListener("click", () => { if (pageNumber > 1) { pageNumber--; renderPage().catch(error => showPdfRenderError(error,generation)); } });
+        preview.querySelector("[data-pdf-next]").addEventListener("click", () => { if (pageNumber < pdf.numPages) { pageNumber++; renderPage().catch(error => showPdfRenderError(error,generation)); } });
+        preview.querySelector("[data-pdf-zoom-out]").addEventListener("click", () => { zoom = Math.max(.5,zoom-.2); renderPage().catch(error => showPdfRenderError(error,generation)); });
+        preview.querySelector("[data-pdf-zoom-in]").addEventListener("click", () => { zoom = Math.min(2.5,zoom+.2); renderPage().catch(error => showPdfRenderError(error,generation)); });
+        resizeObserver = new ResizeObserver(() => {
+          cancelAnimationFrame(resizeFrame);
+          resizeFrame = requestAnimationFrame(() => renderPage().catch(error => showPdfRenderError(error,generation)));
+        });
+        resizeObserver.observe(pageContainer);
+        await renderPage();
+      }
+      function showPdfRenderError(error, generation) {
+        if (generation !== previewGeneration) return;
+        console.error("Could not render the PDF page.", error);
+        const container = $("#file-preview .pdf-page-container");
+        if (container) container.innerHTML = `<div class="viewer-message"><strong>Could not render the PDF page</strong><p>${escapeHtml(error.message || "Download the file and open it in a separate viewer.")}</p></div>`;
+      }
+      async function decodeCadFile(file, blob, extension) {
+        if (decodedCadCache?.fileId === file.id) return decodedCadCache.triangles;
+        const baseUrl = "https://esm.sh/@wintaru/part-viewer@1.0.0/es2022/dist/";
+        let decoder = cadDecoderCache.get(extension);
+        if (!decoder) {
+          if (extension === "sldprt") {
+            const { SolidWorksDecodeEngine } = await import(`${baseUrl}engine/SolidWorksDecodeEngine.mjs`);
+            decoder = new SolidWorksDecodeEngine();
+          } else {
+            const [{ OcctDecodeEngine }, { WasmAssetAccessor }] = await Promise.all([
+              import(`${baseUrl}engine/OcctDecodeEngine.mjs`),
+              import(`${baseUrl}accessor/WasmAssetAccessor.mjs`)
+            ]);
+            decoder = new OcctDecodeEngine(new WasmAssetAccessor("https://cdn.jsdelivr.net/npm/occt-import-js@0.0.23/dist/occt-import-js.wasm"));
+          }
+          cadDecoderCache.set(extension, decoder);
+        }
+        const model = await decoder.transform(new Uint8Array(await blob.arrayBuffer()));
+        const failure = model.diagnostics?.find(diagnostic => diagnostic.severity === "error");
+        if (failure) throw new Error(failure.message);
+        const triangles = decodedCadModelToTriangles(model);
+        if (!triangles.length) throw new Error("No geometry to display was found in the CAD file.");
+        decodedCadCache = { fileId: file.id, triangles };
+        return triangles;
+      }
+      function decodedCadModelToTriangles(model) {
+        const triangles = [];
+        const identity = [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];
+        const instances = [];
+        const multiply = (left, right) => {
+          const result = Array(16).fill(0);
+          for (let column=0; column<4; column++) for (let row=0; row<4; row++)
+            for (let k=0; k<4; k++) result[column*4+row] += left[k*4+row] * right[column*4+k];
+          return result;
+        };
+        const transformPoint = (matrix, point) => [
+          matrix[0]*point[0]+matrix[4]*point[1]+matrix[8]*point[2]+matrix[12],
+          matrix[1]*point[0]+matrix[5]*point[1]+matrix[9]*point[2]+matrix[13],
+          matrix[2]*point[0]+matrix[6]*point[1]+matrix[10]*point[2]+matrix[14]
+        ];
+        const addInstance = (meshIndex, matrix) => {
+          const mesh = model.meshes[meshIndex];
+          if (!mesh || mesh.topology === "lines" || !mesh.positions?.length) return;
+          const count = mesh.indices?.length ? Math.floor(mesh.indices.length/3) : Math.floor(mesh.positions.length/9);
+          if (count) instances.push({ mesh, matrix, count });
+        };
+        const visit = (node, parentMatrix) => {
+          const localMatrix = node.transform && node.transform.length === 16 ? Array.from(node.transform) : identity;
+          const worldMatrix = multiply(parentMatrix,localMatrix);
+          for (const meshIndex of node.meshIndices || []) addInstance(meshIndex,worldMatrix);
+          for (const child of node.children || []) visit(child,worldMatrix);
+        };
+        if (model.tree?.length) model.tree.forEach(node => visit(node,identity));
+        else model.meshes.forEach((mesh,index) => addInstance(index,identity));
+        const totalCount = instances.reduce((total,instance) => total + instance.count,0);
+        for (const instance of instances) {
+          if (triangles.length >= MAX_VIEWER_TRIANGLES) break;
+          const { mesh, matrix, count } = instance;
+          const targetCount = Math.max(1,Math.floor(MAX_VIEWER_TRIANGLES*count/totalCount));
+          const stride = Math.max(1,Math.ceil(count/targetCount));
+          const positions = mesh.positions;
+          const indices = mesh.indices;
+          for (let triangle=0; triangle<count; triangle+=stride) {
+            if (triangles.length >= MAX_VIEWER_TRIANGLES) break;
+            const points = [];
+            for (let vertex=0; vertex<3; vertex++) {
+              const vertexIndex = indices?.length ? indices[triangle*3+vertex] : triangle*3+vertex;
+              const offset = vertexIndex*3;
+              const point = [positions[offset],positions[offset+1],positions[offset+2]];
+              if (!point.every(Number.isFinite)) { points.length=0; break; }
+              points.push(transformPoint(matrix,point));
+            }
+            if (points.length===3) triangles.push(points);
+          }
+        }
+        return triangles;
+      }
+      function renderFiles() {
+        const tasks = visibleTasks();
+        if (selectedFileId && !state.files.some(file => file.id === selectedFileId)) selectedFileId = null;
+        const files = state.files.filter(file => canManage() || tasks.some(task => task.id === file.taskId));
+        if (!selectedFileId && files.length) selectedFileId = files[0].id;
+        const selected = files.find(file => file.id === selectedFileId);
+        const selectedTask = selected && state.tasks.find(task => task.id === selected.taskId);
+        clearViewerResources();
+        const actions = `<button class="btn" data-action="register-file">＋ Register File</button>`;
+        const drive = state.driveUrl ? `<a class="btn btn-primary" href="${safeUrl(state.driveUrl)}" target="_blank" rel="noopener noreferrer">↗ Open Google Drive</a>` : "";
+        $("#content").innerHTML = `${pageHeading("Engineering Resources", "Files and CAD", "Preview STL, STEP, SLDPRT, PDF, image, and text files. Other formats can be downloaded.", actions + drive)}
+          ${selected ? `<div class="grid file-layout">
+            <div class="file-main">
+              <section class="card"><div class="card-header"><div style="min-width:0"><h2 class="file-name">${escapeHtml(selected.name)}</h2><div class="file-meta"><span>${escapeHtml(selected.tag)}</span><span>${escapeHtml(selected.taskId)}</span><span>${escapeHtml(selected.sizeLabel)}</span><span>${new Date(selected.createdAt).toLocaleString("en-GB")}</span></div></div><div class="heading-actions"><button class="btn btn-primary btn-sm" data-download-selected="${escapeHtml(selected.id)}">↓ Download</button>${canManage() ? `<button class="btn btn-sm btn-danger" data-delete-file="${escapeHtml(selected.id)}">Delete</button>` : ""}</div></div>
+                <div class="card-body"><div class="file-info"><span class="muted">Task: ${escapeHtml(selectedTask?.title || selected.taskId)}</span>${selectedTask ? statusBadge(selectedTask.status) : ""}</div><div id="file-preview" class="viewer-stage" aria-live="polite"><div class="viewer-message">Loading file preview…</div></div></div>
+              </section>
+              <section class="card file-comments" style="margin-top:14px"><div class="card-header"><h2>Engineering Comments</h2><span class="muted">${(selected.comments || []).length}</span></div><div class="card-body"><form id="comment-form"><div class="field"><label for="comment-text">New Note</label><textarea id="comment-text" required maxlength="2000" placeholder="Add a comment, revision, or version note…"></textarea></div><button class="btn btn-primary btn-sm">Add Comment</button></form><div class="comment-list">${(selected.comments || []).length ? selected.comments.map(comment => `<div class="comment"><div class="comment-head"><strong>${escapeHtml(comment.author)}</strong><time>${new Date(comment.createdAt).toLocaleString("en-GB")}</time></div><p>${escapeHtml(comment.text)}</p></div>`).join("") : `<div class="muted">No comments yet.</div>`}</div></div></section>
+            </div>
+            <aside class="card file-list"><div class="card-header"><h2>Project Files</h2><span class="muted">${files.length}</span></div><div class="file-list-items">${files.map(file => {
+              const task = state.tasks.find(item => item.id === file.taskId);
+              return `<button type="button" class="file-list-item ${file.id === selected.id ? "active" : ""}" data-select-file="${escapeHtml(file.id)}"><span class="file-list-name">${escapeHtml(file.name)}</span><span class="file-meta"><span>${new Date(file.createdAt).toLocaleDateString("en-GB")}</span><span>${escapeHtml(file.taskId)}</span></span><span class="file-meta"><span>${escapeHtml(file.tag)}</span>${task ? statusBadge(task.status) : ""}</span></button>`;
+            }).join("")}</div></aside>
+          </div>` :
+          `<section class="card">${empty("No files registered yet", "Add a file and link it to a task to see it in the file library.")}<div style="text-align:center;padding:0 16px 22px"><button class="btn btn-primary" data-action="register-file">＋ Register File</button>${drive ? ` <a class="btn" href="${safeUrl(state.driveUrl)}" target="_blank" rel="noopener noreferrer">↗ Open Google Drive</a>` : ""}</div></section>`}`;
+        if (selected) {
+          loadFilePreview(selected);
+          $("#comment-form").addEventListener("submit", event => { event.preventDefault(); addComment(selected.id, $("#comment-text").value); });
+        }
+        $("#content").querySelectorAll("[data-select-file]").forEach(button => button.addEventListener("click", () => { selectedFileId = button.dataset.selectFile; renderFiles(); }));
+        $("#content").querySelector("[data-download-selected]")?.addEventListener("click", async () => {
+          try { await downloadTaskAttachment(selected.id, selected.name); }
+          catch (error) { console.error("Could not download file.", error); notify(error.message || "Could not download the file.", true); }
+        });
+        $("#content").querySelectorAll("[data-delete-file]").forEach(button => button.addEventListener("click", () => deleteFile(button.dataset.deleteFile)));
+        wirePageActions();
+      }
+      async function loadFilePreview(file) {
+        const generation = previewGeneration;
+        const preview = $("#file-preview");
+        if (!preview) return;
+        try {
+          const blob = await getStoredFileBlob(file.id);
+          if (generation !== previewGeneration || !$("#file-preview")) return;
+          if (!blob) {
+            preview.innerHTML = `<div class="viewer-message"><strong>File is not stored for preview</strong><p>This record was created before file uploads were available. Register the file again to preview it here.</p></div>`;
+            return;
+          }
+          const extension = fileExtension(file);
+          if (["stl","step","stp","sldprt"].includes(extension)) {
+            if (blob.size > MAX_3D_PREVIEW_BYTES) {
+              preview.innerHTML = `<div class="viewer-message"><strong>Model is too large for safe preview</strong><p>Preview is limited to files up to 25 MB to help prevent browser slowdowns. You can still download the file.</p></div>`;
+              return;
+            }
+            preview.classList.add("viewer-stage-3d");
+            preview.innerHTML = `<canvas id="stl-canvas" aria-label="3D model ${escapeHtml(file.name)}"></canvas>`;
+            const triangles = extension === "stl" ? await parseStl(blob) : await decodeCadFile(file,blob,extension);
+            if (generation !== previewGeneration || !$("#stl-canvas")) return;
+            if (!triangles.length) throw new Error("No geometry to display was found in the CAD file.");
+            viewerCleanup = drawStlModel($("#stl-canvas"), triangles);
+            const note = document.createElement("div");
+            note.className = "viewer-format-note";
+            note.textContent = extension === "sldprt"
+              ? "SolidWorks: mesh saved in file · drag to rotate · Ctrl+scroll to zoom."
+              : extension === "stl"
+                ? "STL model · drag to rotate · Ctrl+scroll to zoom."
+                : "STEP model · drag to rotate · Ctrl+scroll to zoom.";
+            preview.append(note);
+            return;
+          }
+          const mime = blob.type || file.type || "";
+          const image = mime.startsWith("image/") || ["png","jpg","jpeg","gif","webp","bmp","avif","svg"].includes(extension);
+          if (image) {
+            viewerObjectUrl = URL.createObjectURL(blob);
+            preview.innerHTML = `<img src="${viewerObjectUrl}" alt="${escapeHtml(file.name)}">`;
+            return;
+          }
+          if (mime === "application/pdf" || extension === "pdf") {
+            await renderPdfFile(blob,preview,generation);
+            return;
+          }
+          if (["txt","md","csv","json","xml","log","js","ts","py","html","css","yaml","yml"].includes(extension) || mime.startsWith("text/")) {
+            const text = await blob.text();
+            if (generation !== previewGeneration || !$("#file-preview")) return;
+            preview.innerHTML = `<pre>${escapeHtml(text)}</pre>`;
+            return;
+          }
+          const supported = extension === "sldasm" || extension === "3mf"
+            ? "Preview is not yet supported for this format. You can download the file."
+            : "This format has no built-in preview. Use the button above the viewer to download the file.";
+          preview.innerHTML = `<div class="viewer-message"><strong>Preview is unavailable for this format</strong><p>${escapeHtml(supported)}</p></div>`;
+        } catch (error) {
+          if (generation !== previewGeneration) return;
+          console.error("Could not open file in viewer.", error);
+          if (generation === previewGeneration && $("#file-preview")) {
+            preview.innerHTML = `<div class="viewer-message"><strong>Could not open file</strong><p>${escapeHtml(error.message || "Check the file or try downloading it.")}</p></div>`;
+          }
+        }
+      }
+      async function parseStl(blob) {
+        const buffer = await blob.arrayBuffer();
+        const view = new DataView(buffer);
+        if (buffer.byteLength >= 84) {
+          const count = view.getUint32(80, true);
+          if (count > 0 && 84 + count * 50 === buffer.byteLength) {
+            const triangles = [];
+            const stride = Math.max(1, Math.ceil(count / MAX_VIEWER_TRIANGLES));
+            for (let i = 0; i < count; i += stride) {
+              const offset = 84 + i * 50 + 12;
+              triangles.push([
+                [view.getFloat32(offset,true),view.getFloat32(offset+4,true),view.getFloat32(offset+8,true)],
+                [view.getFloat32(offset+12,true),view.getFloat32(offset+16,true),view.getFloat32(offset+20,true)],
+                [view.getFloat32(offset+24,true),view.getFloat32(offset+28,true),view.getFloat32(offset+32,true)]
+              ]);
+            }
+            return triangles;
+          }
+        }
+        const text = new TextDecoder().decode(buffer);
+        const vertexPattern = /vertex\s+([-+\d.eE]+)\s+([-+\d.eE]+)\s+([-+\d.eE]+)/gi;
+        let vertexCount = 0;
+        for (const _match of text.matchAll(vertexPattern)) vertexCount++;
+        const triangles = [];
+        const triangleCount = Math.floor(vertexCount/3);
+        const stride = Math.max(1,Math.ceil(triangleCount/MAX_VIEWER_TRIANGLES));
+        let triangleIndex = 0;
+        let triangle = [];
+        for (const match of text.matchAll(vertexPattern)) {
+          const point = [Number(match[1]),Number(match[2]),Number(match[3])];
+          if (point.every(Number.isFinite)) triangle.push(point);
+          if (triangle.length === 3) {
+            if (triangleIndex % stride === 0) triangles.push(triangle);
+            triangleIndex++;
+            triangle = [];
+          }
+        }
+        return triangles;
+      }
+      function drawStlModel(canvas, triangles) {
+        const mins = [Infinity,Infinity,Infinity], maxs = [-Infinity,-Infinity,-Infinity];
+        triangles.forEach(triangle => triangle.forEach(point => point.forEach((value,axis) => { mins[axis] = Math.min(mins[axis],value); maxs[axis] = Math.max(maxs[axis],value); })));
+        const center = mins.map((value,axis) => (value + maxs[axis]) / 2);
+        const extent = Math.max(...mins.map((value,axis) => maxs[axis] - value)) || 1;
+        const normalized = triangles.map(triangle => triangle.map(point => point.map((value,axis) => (value - center[axis]) / extent)));
+        let yaw = -.65, pitch = .42, zoom = 1, dragging = false, previous = null;
+        const ctx = canvas.getContext("2d");
+        let renderScheduled = false;
+        let renderFrame = 0;
+        const scheduleRender = () => {
+          if (renderScheduled) return;
+          renderScheduled = true;
+          renderFrame = requestAnimationFrame(() => {
+            renderScheduled = false;
+            renderFrame = 0;
+            if (canvas.isConnected) render();
+          });
+        };
+        const render = () => {
+          const rect = canvas.getBoundingClientRect();
+          const ratio = Math.min(window.devicePixelRatio || 1,2);
+          const width = Math.max(1, rect.width), height = Math.max(1, rect.height);
+          const bitmapWidth = Math.floor(width*ratio), bitmapHeight = Math.floor(height*ratio);
+          if (canvas.width !== bitmapWidth || canvas.height !== bitmapHeight) {
+            canvas.width = bitmapWidth;
+            canvas.height = bitmapHeight;
+          }
+          ctx.setTransform(ratio,0,0,ratio,0,0);
+          ctx.fillStyle = "#ffffff"; ctx.fillRect(0,0,width,height);
+          const cosY = Math.cos(yaw), sinY = Math.sin(yaw), cosP = Math.cos(pitch), sinP = Math.sin(pitch);
+          const scale = Math.min(width,height) * .78 * zoom;
+          const projected = normalized.map(triangle => {
+            const transformed = triangle.map(([x,y,z]) => {
+              const rx = x*cosY - z*sinY, rz = x*sinY + z*cosY;
+              const ry = y*cosP - rz*sinP, depth = y*sinP + rz*cosP;
+              return { x: width/2 + rx*scale, y: height/2 - ry*scale, z: depth };
+            });
+            const [a,b,c] = transformed;
+            const ux=b.x-a.x, uy=b.y-a.y, vx=c.x-a.x, vy=c.y-a.y;
+            const light = Math.min(1,Math.max(0,Math.abs(ux*vy-uy*vx)/(scale*scale)*2));
+            return { points: transformed, depth: transformed.reduce((sum,p)=>sum+p.z,0)/3, light };
+          }).sort((a,b)=>a.depth-b.depth);
+          projected.forEach(face => {
+            const shade = Math.round(145 + face.light*70);
+            ctx.beginPath();
+            face.points.forEach((point,index)=>index?ctx.lineTo(point.x,point.y):ctx.moveTo(point.x,point.y));
+            ctx.closePath();
+            ctx.fillStyle = `rgb(${shade},${shade},${shade})`;
+            ctx.fill();
+            ctx.strokeStyle = "rgba(70,75,80,.22)";
+            ctx.lineWidth = .55;
+            ctx.stroke();
+          });
+        };
+        const onDown = event => { dragging = true; previous = [event.clientX,event.clientY]; canvas.setPointerCapture(event.pointerId); };
+        const onMove = event => {
+          if (!dragging || !previous) return;
+          yaw += (event.clientX-previous[0])*.012;
+          pitch = Math.max(-1.5,Math.min(1.5,pitch+(event.clientY-previous[1])*.012));
+          previous = [event.clientX,event.clientY]; scheduleRender();
+        };
+        const onUp = () => { dragging = false; previous = null; };
+        const onWheel = event => {
+          if (!event.ctrlKey) return;
+          event.preventDefault();
+          zoom = Math.max(.25,Math.min(4,zoom*(event.deltaY<0?1.1:.9)));
+          scheduleRender();
+        };
+        canvas.addEventListener("pointerdown",onDown);
+        canvas.addEventListener("pointermove",onMove);
+        canvas.addEventListener("pointerup",onUp);
+        canvas.addEventListener("pointercancel",onUp);
+        canvas.addEventListener("wheel",onWheel,{passive:false});
+        const observer = new ResizeObserver(scheduleRender); observer.observe(canvas);
+        render();
+        return () => {
+          observer.disconnect();
+          if (renderFrame) cancelAnimationFrame(renderFrame);
+          canvas.removeEventListener("pointerdown",onDown);
+          canvas.removeEventListener("pointermove",onMove);
+          canvas.removeEventListener("pointerup",onUp);
+          canvas.removeEventListener("pointercancel",onUp);
+          canvas.removeEventListener("wheel",onWheel);
+        };
+      }
+      function addComment(fileId, text) {
+        const file = state.files.find(item => item.id === fileId);
+        if (!file || !text.trim()) return;
+        file.comments = file.comments || [];
+        file.comments.push({ id: id(), author: displayName(session), text: text.trim(), createdAt: new Date().toISOString() });
+        if (!saveState()) return;
+        renderFiles();
+        notify("Comment added.");
+      }
+      async function deleteFile(fileId) {
+        if (!canManage() || !confirm("Delete this file registration and its comments?")) return;
+        const driveFileId = state.files.find(file => file.id === fileId)?.driveFileId;
+        const previousFiles = state.files;
+        state.files = state.files.filter(file => file.id !== fileId);
+        if (selectedFileId === fileId) selectedFileId = null;
+        if (!saveState()) { state.files = previousFiles; return; }
+        await cloudSaveQueue;
+        if (cloudLastError) {
+          state.files = previousFiles;
+          saveState();
+          notify("File was not deleted because Drive could not save the updated file list.", true);
+          return;
+        }
+        let cleanupFailed = false;
+        try { await deleteTaskAttachments([fileId]); }
+        catch (error) {
+          console.error("Could not remove file contents from local storage.", error);
+          cleanupFailed = true;
+        }
+        if (driveFileId) {
+          try { await postCloudAction({ action: "deleteFile", fileId: driveFileId }); }
+          catch (error) {
+            console.error("Could not delete the file from Google Drive.", error);
+            cleanupFailed = true;
+          }
+        }
+        renderFiles();
+        notify(cleanupFailed ? "The file record was removed, but some stored file contents could not be cleared." : "File deleted.", cleanupFailed);
+      }
+      function renderAdmin() {
+        if (!isAdmin()) { activePage = "dashboard"; return renderApp(); }
+        const userRows = state.users.map(user => `<tr><td><div class="table-main">${escapeHtml(displayName(user))}</div></td><td><code>${escapeHtml(user.username)}</code></td><td>${escapeHtml(user.department)}</td><td>${fmtDate(user.birthDate)}</td><td><button class="btn btn-sm" data-edit-user="${escapeHtml(user.id)}">Edit</button> <button class="btn btn-sm btn-danger" data-delete-user="${escapeHtml(user.id)}">Delete</button></td></tr>`).join("");
+        $("#content").innerHTML = `${pageHeading("Platform Management", "Employees and Google Drive", "Add employees, assign usernames, and configure the shared Drive link.", '<button class="btn btn-primary" data-action="new-user">＋ Add Employee</button>')}
+          <div class="notice" style="margin-bottom:16px">Sign-in is not server-side security. Anyone with the Apps Script deployment URL may access its Drive data. Do not store confidential information.</div>
+          <div class="grid admin-grid"><section class="card"><div class="card-header"><h2>Employees</h2><span class="muted">${state.users.length} profiles</span></div><div class="table-wrap"><table><thead><tr><th>Employee</th><th>Login Username</th><th>Role / Department</th><th>Date of Birth</th><th>Actions</th></tr></thead><tbody>${userRows}</tbody></table></div></section>
+          <section class="card"><div class="card-header"><h2>Platform Settings</h2></div><div class="card-body"><form id="settings-form" class="settings-form">
+            <div class="field"><label for="drive-url">Global Google Drive Link</label><input id="drive-url" type="url" placeholder="https://drive.google.com/drive/folders/…" value="${escapeHtml(state.driveUrl)}"></div>
+            <button class="btn btn-primary">Save Settings</button>
+          </form></div></section></div>`;
+        $("#settings-form").addEventListener("submit", event => {
+          event.preventDefault();
+          const url = $("#drive-url").value.trim();
+          if (url && safeUrl(url) === "#") { notify("Enter a valid link starting with http:// or https://.", true); return; }
+          state.driveUrl = url;
+          if (saveState()) { renderAdmin(); notify("Settings saved."); }
+        });
+        $("#content").querySelectorAll("[data-edit-user]").forEach(button => button.addEventListener("click", () => openUserModal(button.dataset.editUser)));
+        $("#content").querySelectorAll("[data-delete-user]").forEach(button => button.addEventListener("click", () => removeUser(button.dataset.deleteUser)));
+        wirePageActions();
+      }
+      function wirePageActions() {
+        $("#content").querySelectorAll("[data-action='new-task']").forEach(button => button.addEventListener("click", openTaskModal));
+        $("#content").querySelectorAll("[data-action='new-user']").forEach(button => button.addEventListener("click", () => openUserModal()));
+        $("#content").querySelectorAll("[data-action='register-file']").forEach(button => button.addEventListener("click", openFileModal));
+        $("#content").querySelectorAll("[data-goto]").forEach(button => button.addEventListener("click", () => { activePage = button.dataset.goto; renderApp(); }));
+      }
+      function showModal(title, body, onSubmit, submitLabel = "Save") {
+        $("#modal-root").innerHTML = `<div class="modal-backdrop"><section class="modal" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}"><form id="modal-form"><div class="modal-head"><h2>${escapeHtml(title)}</h2><button type="button" class="btn btn-sm" data-close>✕</button></div><div class="modal-body">${body}</div><div class="modal-foot"><button type="button" class="btn" data-close>Cancel</button><button class="btn btn-primary">${escapeHtml(submitLabel)}</button></div></form></section></div>`;
+        $("#modal-form").addEventListener("submit", event => {
+          event.preventDefault();
+          const submit = $("#modal-form button[type='submit'], #modal-form .modal-foot button:not([type='button'])");
+          if (submit) submit.disabled = true;
+          Promise.resolve(onSubmit(new FormData(event.currentTarget))).catch(error => {
+            console.error("Could not complete form action.", error);
+            notify(error.message || "Could not save form data.", true);
+          }).finally(() => { if (submit?.isConnected) submit.disabled = false; });
+        });
+        $("#modal-root").querySelectorAll("[data-close]").forEach(button => button.addEventListener("click", closeModal));
+        $("#modal-root").querySelector(".modal-backdrop").addEventListener("click", event => { if (event.target.classList.contains("modal-backdrop")) closeModal(); });
+        const first = $("#modal-form input, #modal-form select");
+        first?.focus();
+      }
+      function closeModal() { $("#modal-root").innerHTML = ""; }
+      function openUserModal(userId) {
+        const user = userId ? userById(userId) : null;
+        const field = (label, name, value, type = "text", required = true) => `<div class="field"><label>${label}</label><input name="${name}" type="${type}" value="${escapeHtml(value || "")}" ${required ? "required" : ""}></div>`;
+        const body = `<div class="form-grid">${field("First Name", "firstName", user?.firstName)}${field("Last Name", "lastName", user?.lastName)}<div class="field"><label>Login Username</label><input name="username" type="text" value="${escapeHtml(user?.username || "")}" autocomplete="off" required><span class="muted" style="font-size:10px">The employee's unique login, not their role or job title.</span></div>${field("Date of Birth", "birthDate", user?.birthDate, "date", false)}<div class="field full"><label>Role / Department</label><select name="department" required>${DEPARTMENTS.map(dep => `<option ${user?.department === dep ? "selected" : ""}>${dep}</option>`).join("")}</select></div></div>`;
+        showModal(user ? "Edit Profile" : "Add Employee", body, form => {
+          const data = Object.fromEntries(form.entries());
+          const username = String(data.username).trim();
+          if (state.users.some(item => item.username.toLowerCase() === username.toLowerCase() && item.id !== user?.id)) { notify("That username is already in use.", true); return; }
+          const next = { ...user, id: user?.id || id(), ...data, username };
+          if (user) {
+            state.users = state.users.map(item => item.id === user.id ? next : item);
+            state.tasks.forEach(task => { if (task.assigneeId === user.id) task.department = next.department; });
+            if (session?.id === user.id) session = { ...session, ...next };
+          } else state.users.push(next);
+          if (!saveState()) return;
+          closeModal(); renderApp(); notify(user ? "Profile updated." : "Employee added.");
+        });
+      }
+      function removeUser(userId) {
+        const user = userById(userId);
+        if (!user) return;
+        if (user.id === session.id) { notify("You cannot delete the profile you are currently signed in with.", true); return; }
+        if (state.tasks.some(task => task.assigneeId === userId) && !confirm("This employee has assigned tasks. Delete their profile? The tasks will remain unassigned.")) return;
+        if (!confirm(`Delete profile "${displayName(user)}"?`)) return;
+        state.users = state.users.filter(item => item.id !== userId);
+        state.tasks.forEach(task => { if (task.assigneeId === userId) { task.assigneeId = ""; task.department = user.department; } });
+        if (!saveState()) return;
+        renderAdmin(); notify("Profile deleted.");
+      }
+      function openTaskModal() {
+        if (!canManage()) return notify("Only the CEO / Admin can create tasks.", true);
+        const eligible = state.users.filter(user => user.department !== "CEO / Admin");
+        const body = `<div class="form-grid"><div class="field full"><label>Task Title</label><input name="title" maxlength="160" required></div>
+          <div class="field full"><label>Description</label><textarea name="description" maxlength="3000" placeholder="Expected outcome and completion criteria"></textarea></div>
+          <div class="field"><label>Deadline</label><input name="deadline" type="date" required></div>
+          <div class="field"><label>Assignee</label><select name="assigneeId" required>${eligible.map(user => `<option value="${escapeHtml(user.id)}">${escapeHtml(displayName(user))} — ${escapeHtml(user.department)}</option>`).join("")}</select></div>
+          <div class="field full"><label>Task Attachments (optional, multiple files allowed)</label><input name="attachments" type="file" multiple><span class="muted" style="font-size:10px">Files are uploaded to the shared Google Drive folder. Maximum 20 MB per file.</span></div>
+        </div>`;
+        showModal("Create Task", body, async form => {
+          const data = Object.fromEntries(form.entries());
+          const user = userById(data.assigneeId);
+          if (!user) return notify("Select an active employee.", true);
+          const number = state.tasks.reduce((max, task) => Math.max(max, Number(task.id.match(/^TASK-(\d+)$/)?.[1] || 0)), 0) + 1;
+          const attachments = Array.from(form.getAll("attachments"))
+            .filter(file => file instanceof File && file.name)
+            .map(file => ({
+              id: id(),
+              file,
+              metadata: {
+                id: null,
+                name: file.name,
+                size: file.size,
+                type: file.type || "application/octet-stream"
+              }
+            }));
+          attachments.forEach(item => { item.metadata.id = item.id; });
+          try {
+            await storeTaskAttachments(attachments);
+          } catch (error) {
+            console.error("Could not save task attachments.", error);
+            notify(error.message || "Could not save task attachments.", true);
+            return;
+          }
+          const task = { id: `TASK-${String(number).padStart(3,"0")}`, title: String(data.title).trim(), description: String(data.description).trim(), deadline: data.deadline, assigneeId: user.id, department: user.department, status: "Pending", assigneeViewed: false, createdAt: new Date().toISOString(), attachments: attachments.map(item => item.metadata) };
+          state.tasks.unshift(task);
+          if (!saveState()) {
+            state.tasks.shift();
+            try { await deleteTaskAttachments(attachments.map(item => item.id)); }
+            catch (error) { console.error("Could not delete attachments after task save failed.", error); }
+            await Promise.all(attachments.map(item => item.driveFileId ? postCloudAction({ action: "deleteFile", fileId: item.driveFileId }).catch(error => console.error("Could not remove a Drive attachment after task save failed.", error)) : Promise.resolve()));
+            return;
+          }
+          closeModal(); renderApp(); notify("Task created.");
+        });
+      }
+      function openFileModal() {
+        const tasks = visibleTasks();
+        if (!tasks.length) { notify("Create a task before registering a file.", true); return; }
+        const body = `<div class="field"><label>File from Device</label><input name="file" type="file" required></div>
+          <div class="field"><label>Linked Task</label><select name="taskId" required>${tasks.map(task => `<option value="${escapeHtml(task.id)}">${escapeHtml(task.id)} — ${escapeHtml(task.title)}</option>`).join("")}</select></div>
+          <div class="field"><label>File Type</label><select name="tag"><option>ENG-3D</option><option>ENG-ELEC</option><option>ENG-SOFT</option><option>DOC-GENERAL</option></select><span class="muted" style="font-size:10px">The type is selected automatically based on the extension and can be changed.</span></div>
+          <div class="notice">The file will be uploaded to the shared Google Drive folder and linked to this task. Maximum 20 MB.</div>`;
+        showModal("Register File", body, async form => {
+          const file = form.get("file");
+          if (!(file instanceof File) || !file.name) return notify("Choose a file.", true);
+          const task = state.tasks.find(item => item.id === form.get("taskId"));
+          if (!task) return notify("The selected task is no longer available.", true);
+          const tag = form.get("tag") || fileTypeFor(file);
+          const sizeLabel = formatFileSize(file.size);
+          const record = { id: id(), name: file.name, sizeLabel, bytes: file.size, type: file.type || "", tag, taskId: task.id, author: displayName(session), createdAt: new Date().toISOString(), comments: [] };
+          try {
+            const attachment = { id: record.id, file };
+            await storeTaskAttachments([attachment]);
+            record.driveFileId = attachment.driveFileId;
+          } catch (error) {
+            console.error("Could not save file to local storage.", error);
+            notify(error.message || "Could not save the file.", true);
+            return;
+          }
+          state.files.unshift(record);
+          if (!saveState()) {
+            state.files.shift();
+            try { await deleteTaskAttachments([record.id]); }
+            catch (error) { console.error("Could not delete file after record save failed.", error); }
+            if (record.driveFileId) await postCloudAction({ action: "deleteFile", fileId: record.driveFileId }).catch(error => console.error("Could not remove Drive file after record save failed.", error));
+            return;
+          }
+          selectedFileId = record.id;
+          closeModal(); renderApp(); notify("File metadata registered.");
+        }, "Register");
+        $("#modal-form [name='file']").addEventListener("change", event => {
+          const file = event.target.files[0];
+          if (file) $("#modal-form [name='tag']").value = fileTypeFor(file);
+        });
+      }
+      $("#employee-auth-form").addEventListener("submit", event => { event.preventDefault(); login(); });
+      $("#logout").addEventListener("click", logout);
+      $("#mobile-logout").addEventListener("click", logout);
+      renderLogin();
+      initializeCloud();
+    })();
+  </script>
+</body>
+</html>
