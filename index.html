@@ -374,6 +374,10 @@
       let cloudReady = false;
       let cloudLastError = null;
       let cloudSaveQueue = Promise.resolve();
+      let cloudBaseState = null;
+      let cloudSavePending = 0;
+      let cloudPollTimer = null;
+      let cloudPollInFlight = false;
       let session = null;
       let activePage = "dashboard";
       let scheduleWeekOffset = 0;
@@ -405,7 +409,7 @@
         return new Promise((resolve, reject) => {
           const callbackName = `__velgoCallback_${id().replace(/-/g, "")}`;
           const script = document.createElement("script");
-          const query = new URLSearchParams({ action, callback: callbackName, ...params });
+          const query = new URLSearchParams({ action, callback: callbackName, ...params, _ts: String(Date.now()) });
           const cleanup = () => {
             delete window[callbackName];
             script.remove();
@@ -466,17 +470,111 @@
         delete cloudState.adminPassword;
         return cloudState;
       }
+      function cloneState(value) {
+        return value == null ? value : JSON.parse(JSON.stringify(value));
+      }
+      function mergeConcurrentState(base, local, remote) {
+        const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
+        if (same(local, base)) return cloneState(remote);
+        if (same(remote, base) || same(local, remote)) return cloneState(local);
+        const isRecord = value => value !== null && typeof value === "object" && !Array.isArray(value);
+        if (Array.isArray(base) && Array.isArray(local) && Array.isArray(remote) &&
+            [...base, ...local, ...remote].every(item => item && isRecord(item) && item.id)) {
+          const byId = items => new Map(items.map(item => [String(item.id), item]));
+          const baseById = byId(base);
+          const localById = byId(local);
+          const remoteById = byId(remote);
+          const ids = [...new Set([...localById.keys(), ...remoteById.keys()])];
+          return ids.flatMap(itemId => {
+            const inBase = baseById.has(itemId);
+            const inLocal = localById.has(itemId);
+            const inRemote = remoteById.has(itemId);
+            if (!inLocal && !inRemote) return [];
+            if (inBase && !inLocal) return same(remoteById.get(itemId), baseById.get(itemId)) ? [] : [remoteById.get(itemId)];
+            if (inBase && !inRemote) return same(localById.get(itemId), baseById.get(itemId)) ? [] : [localById.get(itemId)];
+            if (inLocal && inRemote) {
+              return [inBase
+                ? mergeConcurrentState(baseById.get(itemId), localById.get(itemId), remoteById.get(itemId))
+                : mergeConcurrentState({}, localById.get(itemId), remoteById.get(itemId))];
+            }
+            return [inLocal ? localById.get(itemId) : remoteById.get(itemId)];
+          });
+        }
+        if (Array.isArray(base) && Array.isArray(local) && Array.isArray(remote)) {
+          const isAppendOnly = items => base.every((item, index) => same(item, items[index]));
+          if (isAppendOnly(local) && isAppendOnly(remote)) {
+            const merged = cloneState(base);
+            [...local.slice(base.length), ...remote.slice(base.length)].forEach(item => {
+              if (!merged.some(existing => same(existing, item))) merged.push(cloneState(item));
+            });
+            return merged;
+          }
+        }
+        if (isRecord(base) && isRecord(local) && isRecord(remote)) {
+          const result = {};
+          const keys = new Set([...Object.keys(base), ...Object.keys(local), ...Object.keys(remote)]);
+          keys.forEach(key => {
+            const hasBase = Object.prototype.hasOwnProperty.call(base, key);
+            const hasLocal = Object.prototype.hasOwnProperty.call(local, key);
+            const hasRemote = Object.prototype.hasOwnProperty.call(remote, key);
+            const value = mergeConcurrentState(
+              hasBase ? base[key] : undefined,
+              hasLocal ? local[key] : undefined,
+              hasRemote ? remote[key] : undefined
+            );
+            if (value !== undefined) result[key] = value;
+          });
+          return result;
+        }
+        return cloneState(local);
+      }
+      function applyCloudState(remoteState) {
+        if (!remoteState || !Array.isArray(remoteState.users) || !Array.isArray(remoteState.tasks) || !Array.isArray(remoteState.files)) {
+          throw new Error("The shared Drive data is invalid; it was not loaded.");
+        }
+        const localAdminPassword = state.adminPassword;
+        state = { ...initialState(), ...cloneState(remoteState), adminPassword: localAdminPassword };
+        if (!state.availability || typeof state.availability !== "object" || Array.isArray(state.availability)) state.availability = {};
+        cloudBaseState = cloneState(remoteState);
+        if (session && !session.isAdmin) {
+          const refreshedUser = state.users.find(user => user.id === session.id);
+          if (refreshedUser) session = { ...refreshedUser, isAdmin: false };
+        }
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+        catch (error) { console.warn("Could not cache shared platform data in this browser.", error); }
+        refreshActivePage();
+      }
+      function applyCloudSaveResult(result, submittedState) {
+        if (!result?.state || !Array.isArray(result.state.users) || !Array.isArray(result.state.tasks) || !Array.isArray(result.state.files)) {
+          throw new Error("Google Drive returned an invalid saved state.");
+        }
+        const localAdminPassword = state.adminPassword;
+        const currentLocalState = stateForCloud();
+        const rebasedState = mergeConcurrentState(submittedState, currentLocalState, result.state);
+        state = { ...initialState(), ...rebasedState, adminPassword: localAdminPassword };
+        cloudBaseState = cloneState(result.state);
+        if (session && !session.isAdmin) {
+          const refreshedUser = state.users.find(user => user.id === session.id);
+          if (refreshedUser) session = { ...refreshedUser, isAdmin: false };
+        }
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+        catch (error) { console.warn("Could not cache shared platform data in this browser.", error); }
+        refreshActivePage();
+      }
       function setCloudSaveStatus(promise) {
+        cloudSavePending += 1;
         cloudSaveQueue = cloudSaveQueue.then(async () => {
           setCloudStatus("Syncing to Drive");
-          await promise();
+          const result = await promise();
           cloudLastError = null;
+          cloudSavePending = Math.max(0, cloudSavePending - 1);
           setCloudStatus("Drive synced");
+          return result;
         }).catch(error => {
+          cloudSavePending = Math.max(0, cloudSavePending - 1);
           cloudLastError = error;
           console.error("Could not synchronize platform data with Google Drive.", error);
           setCloudStatus(error.message || "Drive sync failed", true, true);
-          notify(`Google Drive sync failed: ${error.message || "Unknown error."}`, true);
         });
         return cloudSaveQueue;
       }
@@ -485,7 +583,12 @@
           localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
           if (cloudReady) {
             const snapshot = stateForCloud();
-            setCloudSaveStatus(() => postCloudAction({ action: "saveState", state: snapshot }));
+            const baseSnapshot = cloneState(cloudBaseState || snapshot);
+            setCloudSaveStatus(async () => {
+              const result = await postCloudAction({ action: "saveState", state: snapshot, baseState: baseSnapshot });
+              applyCloudSaveResult(result, snapshot);
+              return result;
+            });
           }
           return true;
         } catch (error) {
@@ -509,29 +612,30 @@
         try {
           if (cloudReady) {
             await cloudSaveQueue;
-            await postCloudAction({ action: "saveState", state: stateForCloud() });
+            const snapshot = stateForCloud();
+            const result = await postCloudAction({ action: "saveState", state: snapshot, baseState: cloneState(cloudBaseState || snapshot) });
+            applyCloudSaveResult(result, snapshot);
             cloudLastError = null;
             setCloudStatus("Drive synced");
+            startCloudPolling();
             if (loginButton) loginButton.disabled = false;
             return;
           }
           const envelope = await loadRemoteJsonp("load");
           if (envelope !== null) {
-            if (!envelope.state || !Array.isArray(envelope.state.users) || !Array.isArray(envelope.state.tasks) || !Array.isArray(envelope.state.files)) {
-              throw new Error("The shared Drive data is invalid; it was not loaded.");
-            }
-            const localAdminPassword = state.adminPassword;
-            state = { ...initialState(), ...envelope.state, adminPassword: localAdminPassword };
-            if (!state.availability || typeof state.availability !== "object" || Array.isArray(state.availability)) state.availability = {};
+            applyCloudState(envelope.state);
           }
           const migratedFiles = await uploadExistingLocalFiles();
           cloudReady = true;
           try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
           catch (error) { console.warn("Could not cache shared platform data in this browser.", error); }
           if (envelope === null || migratedFiles) {
-            await postCloudAction({ action: "saveState", state: stateForCloud() });
+            const snapshot = stateForCloud();
+            const result = await postCloudAction({ action: "saveState", state: snapshot, baseState: cloneState(cloudBaseState || snapshot) });
+            applyCloudSaveResult(result, snapshot);
           }
           setCloudStatus("Drive connected");
+          startCloudPolling();
           if (loginButton) loginButton.disabled = false;
         } catch (error) {
           cloudReady = false;
@@ -540,6 +644,37 @@
           setCloudStatus(error.message || "Drive connection failed", true, true);
         }
       }
+      function startCloudPolling() {
+        if (!cloudReady || !session || cloudPollTimer) return;
+        cloudPollTimer = setInterval(syncRemoteState, 15000);
+        if (document.visibilityState === "visible") syncRemoteState();
+      }
+      function stopCloudPolling() {
+        if (cloudPollTimer) clearInterval(cloudPollTimer);
+        cloudPollTimer = null;
+      }
+      async function syncRemoteState() {
+        const activeElement = document.activeElement;
+        if (!cloudReady || !session || document.visibilityState !== "visible" || cloudSavePending || cloudPollInFlight ||
+            $("#modal-root").childElementCount ||
+            activeElement?.matches("input, textarea, select")) return;
+        cloudPollInFlight = true;
+        try {
+          const envelope = await loadRemoteJsonp("load");
+          if (!envelope?.state || !session || cloudSavePending || $("#modal-root").childElementCount ||
+              document.visibilityState !== "visible" || document.activeElement?.matches("input, textarea, select")) return;
+          if (JSON.stringify(envelope.state) === JSON.stringify(cloudBaseState)) return;
+          applyCloudState(envelope.state);
+        } catch (error) {
+          console.warn("Could not refresh shared platform data from Google Drive.", error);
+        } finally {
+          cloudPollInFlight = false;
+        }
+      }
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") syncRemoteState();
+      });
+      window.addEventListener("focus", syncRemoteState);
       async function uploadExistingLocalFiles() {
         let changed = false;
         const records = [
@@ -721,8 +856,9 @@
         }
         activePage = adminMode ? "admin" : "dashboard";
         renderApp();
+        startCloudPolling();
       }
-      function logout() { session = null; renderLogin(); }
+      function logout() { stopCloudPolling(); session = null; renderLogin(); }
       function unreadAssignedTasks() {
         return isAdmin() ? [] : state.tasks.filter(task => task.assigneeId === session.id && task.assigneeViewed === false);
       }
@@ -732,7 +868,56 @@
         unread.forEach(task => { task.assigneeViewed = true; });
         if (!saveState()) unread.forEach(task => { task.assigneeViewed = false; });
       }
-      function renderApp() {
+      function refreshActivePage() {
+        if (!session || $("#modal-root").childElementCount ||
+            document.activeElement?.matches("input, textarea, select")) return;
+        const content = $("#content");
+        const pageScroll = { x: window.scrollX, y: window.scrollY };
+        const scrollSelectors = [".table-wrap", ".schedule-table-wrap", ".file-list-items"];
+        const scrollPositions = scrollSelectors.flatMap(selector =>
+          Array.from(content.querySelectorAll(selector), (element, index) => ({
+            selector, index, top: element.scrollTop, left: element.scrollLeft
+          }))
+        );
+        const drafts = new Map(["task-search", "task-filter", "comment-text", "drive-url"]
+          .map(fieldId => [fieldId, document.getElementById(fieldId)])
+          .filter(([, element]) => element)
+          .map(([fieldId, element]) => [fieldId, element.value]));
+        const focused = document.activeElement;
+        const focusTarget = focused?.id
+          ? { id: focused.id }
+          : ["data-page", "data-select-file", "data-goto", "data-action"].reduce((target, attribute) =>
+              target || (focused?.hasAttribute(attribute)
+                ? { attribute, value: focused.getAttribute(attribute) }
+                : null), null);
+
+        renderApp({ preserveFilePreview: activePage === "files" });
+
+        scrollPositions.forEach(position => {
+          const element = content.querySelectorAll(position.selector)[position.index];
+          if (element) {
+            element.scrollTop = position.top;
+            element.scrollLeft = position.left;
+          }
+        });
+        drafts.forEach((value, fieldId) => {
+          const element = document.getElementById(fieldId);
+          if (!element) return;
+          element.value = value;
+          if (fieldId === "task-search") element.dispatchEvent(new Event("input", { bubbles: true }));
+          if (fieldId === "task-filter") element.dispatchEvent(new Event("change", { bubbles: true }));
+        });
+        if (focusTarget) {
+          const target = focusTarget.id
+            ? document.getElementById(focusTarget.id)
+            : Array.from(document.querySelectorAll(`[${focusTarget.attribute}]`))
+              .find(element => element.getAttribute(focusTarget.attribute) === focusTarget.value);
+          try { target?.focus({ preventScroll: true }); }
+          catch (error) { console.warn("Could not restore keyboard focus after sync.", error); }
+        }
+        window.scrollTo(pageScroll.x, pageScroll.y);
+      }
+      function renderApp(options = {}) {
         if (!session) return renderLogin();
         if (isAdmin() && activePage !== "admin") activePage = "admin";
         if (!isAdmin() && activePage === "admin") activePage = "dashboard";
@@ -750,7 +935,8 @@
         const title = NAV_ITEMS.find(([key]) => key === activePage)?.[2] || "Overview";
         $("#topbar-title").textContent = title;
         const pages = { dashboard: renderDashboard, profile: renderProfile, tasks: renderTasks, schedule: renderSchedule, files: renderFiles, admin: renderAdmin };
-        (pages[activePage] || renderDashboard)();
+        if (activePage === "files") renderFiles(options.preserveFilePreview === true);
+        else (pages[activePage] || renderDashboard)();
       }
       function pageHeading(kicker, title, description, actions = "") {
         return `<div class="page-heading"><div><div class="eyebrow">${escapeHtml(kicker)}</div><h1>${escapeHtml(title)}</h1><p>${escapeHtml(description)}</p></div><div class="heading-actions">${actions}</div></div>`;
@@ -1143,14 +1329,17 @@
         }
         return triangles;
       }
-      function renderFiles() {
+      function renderFiles(preservePreview = false) {
+        const previousSelectedFileId = selectedFileId;
+        const previousPreview = preservePreview ? $("#file-preview") : null;
         const tasks = visibleTasks();
         if (selectedFileId && !state.files.some(file => file.id === selectedFileId)) selectedFileId = null;
         const files = state.files.filter(file => canManage() || tasks.some(task => task.id === file.taskId));
         if (!selectedFileId && files.length) selectedFileId = files[0].id;
         const selected = files.find(file => file.id === selectedFileId);
         const selectedTask = selected && state.tasks.find(task => task.id === selected.taskId);
-        clearViewerResources();
+        const keepPreview = Boolean(previousPreview && selected && selected.id === previousSelectedFileId);
+        if (!keepPreview) clearViewerResources();
         const actions = `<button class="btn" data-action="register-file">＋ Register File</button>`;
         const drive = isAdmin() && state.driveUrl ? `<a class="btn btn-primary" href="${safeUrl(state.driveUrl)}" target="_blank" rel="noopener noreferrer">↗ Open Google Drive</a>` : "";
         $("#content").innerHTML = `${pageHeading("Engineering Resources", "Files and CAD", "Preview STL, STEP, SLDPRT, PDF, image, and text files. Other formats can be downloaded.", actions + drive)}
@@ -1167,8 +1356,12 @@
             }).join("")}</div></aside>
           </div>` :
           `<section class="card">${empty("No files registered yet", "Add a file and link it to a task to see it in the file library.")}<div style="text-align:center;padding:0 16px 22px"><button class="btn btn-primary" data-action="register-file">＋ Register File</button>${drive ? ` <a class="btn" href="${safeUrl(state.driveUrl)}" target="_blank" rel="noopener noreferrer">↗ Open Google Drive</a>` : ""}</div></section>`}`;
-        if (selected) {
+        if (keepPreview) {
+          $("#file-preview").replaceWith(previousPreview);
+        } else if (selected) {
           loadFilePreview(selected);
+        }
+        if (selected) {
           $("#comment-form").addEventListener("submit", event => { event.preventDefault(); addComment(selected.id, $("#comment-text").value); });
         }
         $("#content").querySelectorAll("[data-select-file]").forEach(button => button.addEventListener("click", () => { selectedFileId = button.dataset.selectFile; renderFiles(); }));

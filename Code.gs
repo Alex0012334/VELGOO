@@ -31,7 +31,7 @@ function doPost(e) {
     let result;
 
     if (action === "saveState") {
-      result = saveState_(request.state);
+      result = saveState_(request.state, request.baseState);
     } else if (action === "uploadFile") {
       result = uploadFile_(request);
     } else if (action === "deleteFile") {
@@ -58,36 +58,124 @@ function loadState_() {
   }
 }
 
-function saveState_(state) {
+function saveState_(state, baseState) {
   if (!state || typeof state !== "object" || Array.isArray(state)) {
     throw new Error("Invalid platform state.");
   }
 
   const publicState = Object.assign({}, state);
   delete publicState.adminPassword;
-  const content = JSON.stringify({
-    schemaVersion: 1,
-    updatedAt: new Date().toISOString(),
-    state: publicState
-  });
+  baseState = baseState && typeof baseState === "object" && !Array.isArray(baseState) ? baseState : null;
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
     const file = findStateFile_();
+    let mergedState = publicState;
     if (file) {
-      file.setContent(content);
-      return { fileId: file.getId(), updatedAt: new Date().toISOString() };
+      if (!baseState) {
+        throw new Error("This app version cannot safely sync shared changes. Reload the page and try again.");
+      }
+      const currentEnvelope = JSON.parse(file.getBlob().getDataAsString("UTF-8"));
+      if (currentEnvelope.state) {
+        mergedState = mergeConcurrentState_(baseState, publicState, currentEnvelope.state);
+      }
+      const updatedAt = new Date().toISOString();
+      file.setContent(JSON.stringify({
+        schemaVersion: 1,
+        updatedAt: updatedAt,
+        state: mergedState
+      }));
+      return { fileId: file.getId(), updatedAt: updatedAt, state: mergedState };
     }
 
+    const updatedAt = new Date().toISOString();
     const created = getFolder_().createFile(
       STATE_FILE_NAME,
-      content,
+      JSON.stringify({
+        schemaVersion: 1,
+        updatedAt: updatedAt,
+        state: mergedState
+      }),
       MimeType.PLAIN_TEXT
     );
-    return { fileId: created.getId(), updatedAt: new Date().toISOString() };
+    return { fileId: created.getId(), updatedAt: updatedAt, state: mergedState };
   } finally {
     lock.releaseLock();
   }
+}
+
+function mergeConcurrentState_(base, local, remote) {
+  if (sameJson_(local, base)) return remote;
+  if (sameJson_(remote, base) || sameJson_(local, remote)) return local;
+
+  if (Array.isArray(base) && Array.isArray(local) && Array.isArray(remote) &&
+      [...base, ...local, ...remote].every(item => item && typeof item === "object" && !Array.isArray(item) && item.id)) {
+    const baseById = new Map(base.map(item => [String(item.id), item]));
+    const localById = new Map(local.map(item => [String(item.id), item]));
+    const remoteById = new Map(remote.map(item => [String(item.id), item]));
+    const ids = [...new Set([...localById.keys(), ...remoteById.keys()])];
+    const merged = [];
+    ids.forEach(itemId => {
+      const inBase = baseById.has(itemId);
+      const inLocal = localById.has(itemId);
+      const inRemote = remoteById.has(itemId);
+      if (!inLocal && !inRemote) return;
+      if (inBase && !inLocal) {
+        if (!sameJson_(remoteById.get(itemId), baseById.get(itemId))) merged.push(remoteById.get(itemId));
+        return;
+      }
+      if (inBase && !inRemote) {
+        if (!sameJson_(localById.get(itemId), baseById.get(itemId))) merged.push(localById.get(itemId));
+        return;
+      }
+      if (inLocal && inRemote) {
+        merged.push(inBase
+          ? mergeConcurrentState_(baseById.get(itemId), localById.get(itemId), remoteById.get(itemId))
+          : mergeConcurrentState_({}, localById.get(itemId), remoteById.get(itemId)));
+      } else {
+        merged.push(inLocal ? localById.get(itemId) : remoteById.get(itemId));
+      }
+    });
+    return merged;
+  }
+
+  if (Array.isArray(base) && Array.isArray(local) && Array.isArray(remote)) {
+    const isAppendOnly = items => base.every((item, index) => sameJson_(item, items[index]));
+    if (isAppendOnly(local) && isAppendOnly(remote)) {
+      const merged = base.slice();
+      [...local.slice(base.length), ...remote.slice(base.length)].forEach(item => {
+        if (!merged.some(existing => sameJson_(existing, item))) merged.push(item);
+      });
+      return merged;
+    }
+  }
+
+  if (isPlainObject_(base) && isPlainObject_(local) && isPlainObject_(remote)) {
+    const result = {};
+    const keys = new Set([...Object.keys(base), ...Object.keys(local), ...Object.keys(remote)]);
+    keys.forEach(key => {
+      const hasBase = Object.prototype.hasOwnProperty.call(base, key);
+      const hasLocal = Object.prototype.hasOwnProperty.call(local, key);
+      const hasRemote = Object.prototype.hasOwnProperty.call(remote, key);
+      const value = mergeConcurrentState_(
+        hasBase ? base[key] : undefined,
+        hasLocal ? local[key] : undefined,
+        hasRemote ? remote[key] : undefined
+      );
+      if (value !== undefined) result[key] = value;
+    });
+    return result;
+  }
+
+  return local;
+}
+
+function isPlainObject_(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function sameJson_(left, right) {
+  return JSON.stringify(left) === JSON.stringify(right);
 }
 
 function uploadFile_(request) {
