@@ -775,7 +775,9 @@
               ${recent.length ? `<div class="task-list">${recent.map(taskRow).join("")}</div>` : empty("No tasks yet", "Create the first task for the team.")}</section>
             <section class="card"><div class="card-header"><h2>Quick Access</h2></div><div class="card-body">
               <p class="muted" style="margin-top:0">Team documents and engineering files.</p>
-              ${state.driveUrl ? `<a class="btn wide" href="${safeUrl(state.driveUrl)}" target="_blank" rel="noopener noreferrer">↗ Open Google Drive</a>` : `<div class="notice">Google Drive link is not set up yet${isAdmin() ? "." : " — contact an administrator."}</div>`}
+              ${isAdmin()
+                ? (state.driveUrl ? `<a class="btn wide" href="${safeUrl(state.driveUrl)}" target="_blank" rel="noopener noreferrer">↗ Open Google Drive</a>` : `<div class="notice">Google Drive link is not set up yet.</div>`)
+                : `<div class="notice">Direct Google Drive access is restricted to the System Admin. Use Project Files here to work with team files.</div>`}
               <button class="btn wide" style="margin-top:9px" data-goto="files">▧ Go to Project Files</button>
               <div style="margin-top:19px"><div class="eyebrow">YOUR ROLE</div><div style="margin-top:5px;font-weight:650">${escapeHtml(isAdmin() ? "System Admin" : session.department)}</div></div>
             </div></section>
@@ -1150,7 +1152,7 @@
         const selectedTask = selected && state.tasks.find(task => task.id === selected.taskId);
         clearViewerResources();
         const actions = `<button class="btn" data-action="register-file">＋ Register File</button>`;
-        const drive = state.driveUrl ? `<a class="btn btn-primary" href="${safeUrl(state.driveUrl)}" target="_blank" rel="noopener noreferrer">↗ Open Google Drive</a>` : "";
+        const drive = isAdmin() && state.driveUrl ? `<a class="btn btn-primary" href="${safeUrl(state.driveUrl)}" target="_blank" rel="noopener noreferrer">↗ Open Google Drive</a>` : "";
         $("#content").innerHTML = `${pageHeading("Engineering Resources", "Files and CAD", "Preview STL, STEP, SLDPRT, PDF, image, and text files. Other formats can be downloaded.", actions + drive)}
           ${selected ? `<div class="grid file-layout">
             <div class="file-main">
