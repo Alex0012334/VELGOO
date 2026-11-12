@@ -3,18 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#171c22">
+  <meta name="theme-color" content="#f3f6f9">
   <title>VELGO | R&D Platform</title>
   <style>
     :root {
-      color-scheme: dark;
-      --bg: #171c22;
-      --panel: #20262e;
-      --panel-2: #252d36;
-      --panel-3: #2b343f;
-      --line: #39434e;
-      --text: #e8edf2;
-      --muted: #98a5b3;
+      color-scheme: light;
+      --bg: #f3f6f9;
+      --panel: #ffffff;
+      --panel-2: #f5f7fa;
+      --panel-3: #e9eef4;
+      --line: #d9e0e7;
+      --text: #202b36;
+      --muted: #687789;
       --blue: #1687d9;
       --blue-hover: #279ae9;
       --green: #42b883;
@@ -30,49 +30,55 @@
     .hidden { display: none !important; }
     .muted { color: var(--muted); }
     .eyebrow { color: #7f91a3; text-transform: uppercase; letter-spacing: .12em; font-size: 10px; font-weight: 700; }
-    .login-wrap { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: radial-gradient(ellipse at 50% 12%, #263746 0, #171c22 54%); }
-    .login-card { width: min(440px, 100%); padding: 32px; border: 1px solid var(--line); background: rgba(32,38,46,.96); border-radius: 12px; box-shadow: 0 24px 80px #0007; }
+    .login-wrap { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: #fff; }
+    .login-card { width: min(440px, 100%); padding: 32px; border: 1px solid #0d6eb4; color: #fff; background: #1687d9; border-radius: 12px; box-shadow: 0 24px 60px #123b5b26; }
     .brand { display: flex; align-items: center; gap: 10px; min-width: 0; font-size: 14px; font-weight: 750; letter-spacing: .04em; }
     .brand-mark { display: block; width: 136px; height: 40px; flex: 0 0 auto; object-fit: contain; }
     .brand-caption { color: var(--muted); white-space: nowrap; }
+    .login-card .brand-mark { filter: brightness(0) invert(1); }
+    .login-card .brand-caption, .login-card > p, .login-card label, .login-card .cloud-connection { color: #e4f2fc; }
     .login-card h1 { margin: 28px 0 5px; font-size: 24px; }
-    .login-card > p { margin: 0 0 24px; color: var(--muted); }
+    .login-card > p { margin: 0 0 24px; color: #e4f2fc; }
     .field { display: grid; gap: 6px; margin-bottom: 14px; }
-    label { color: #bdc7d1; font-size: 12px; font-weight: 650; }
-    input, select, textarea { width: 100%; color: var(--text); background: #171c22; border: 1px solid var(--line); border-radius: 6px; padding: 10px 11px; outline: none; }
+    label { color: #465564; font-size: 12px; font-weight: 650; }
+    input, select, textarea { width: 100%; color: var(--text); background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 10px 11px; outline: none; }
     input:focus, select:focus, textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px #1687d926; }
     textarea { min-height: 88px; resize: vertical; }
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel-3); padding: 8px 12px; font-weight: 650; transition: .15s ease; }
-    .btn:hover { background: #36414d; border-color: #536271; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid var(--line); border-radius: 6px; color: var(--text); background: var(--panel-3); padding: 8px 12px; font-weight: 650; transition: .15s ease; }
+    .btn:hover { background: #dce4ec; border-color: #b7c3cf; }
     .btn-primary { background: var(--blue); border-color: var(--blue); color: white; }
     .btn-primary:hover { background: var(--blue-hover); border-color: var(--blue-hover); }
     .btn-danger { color: #ffaaaa; }
     .btn-sm { padding: 5px 9px; font-size: 12px; }
     .wide { width: 100%; }
     .login-actions { display: grid; gap: 9px; margin-top: 20px; }
-    .demo-note { margin-top: 18px; padding: 10px 12px; border: 1px solid #3c5264; border-radius: 6px; background: #1b2a36; color: #a9bfce; font-size: 11px; }
     .cloud-connection { margin-top: 12px; color: #9eb4c5; font-size: 11px; }
-    .cloud-connection.error { color: #ffaaaa; }
-    .cloud-connection button { margin-left: 6px; padding: 0; border: 0; color: #78bff2; background: none; text-decoration: underline; }
+    .cloud-connection.error { color: #ffdddd; }
+    .cloud-connection button { margin-left: 6px; padding: 0; border: 0; color: #fff; background: none; text-decoration: underline; }
     .app-shell { display: grid; grid-template-columns: 230px minmax(0, 1fr); min-height: 100vh; }
-    .sidebar { display: flex; flex-direction: column; border-right: 1px solid var(--line); background: #1b2027; padding: 18px 12px; }
+    .sidebar { display: flex; flex-direction: column; border-right: 1px solid #39434e; color: #e8edf2; background: #1b2027; padding: 18px 12px; }
     .sidebar .brand { padding: 2px 9px 22px; }
     .sidebar .brand-mark { width: 100px; height: 34px; }
     .nav-label { padding: 12px 10px 7px; color: #71808e; text-transform: uppercase; letter-spacing: .11em; font-size: 10px; font-weight: 700; }
     .nav-btn { width: 100%; display: flex; align-items: center; gap: 11px; padding: 10px; margin: 2px 0; color: #aeb9c4; text-align: left; background: transparent; border: 0; border-radius: 6px; }
-    .nav-btn:hover { background: #252d36; color: var(--text); }
+    .nav-btn:hover { background: #252d36; color: #fff; }
     .nav-btn.active { color: white; background: #123d5c; box-shadow: inset 2px 0 var(--blue); }
     .nav-icon { width: 18px; text-align: center; color: #93a3b2; }
     .nav-unread-badge { display: inline-flex; min-width: 18px; height: 18px; align-items: center; justify-content: center; margin-left: auto; padding: 0 5px; border-radius: 99px; color: #fff; background: #d94343; font-size: 10px; font-weight: 750; line-height: 1; }
     .sidebar-bottom { margin-top: auto; border-top: 1px solid #303943; padding: 14px 8px 0; }
+    .sidebar .brand-caption, .sidebar .user-chip small { color: #98a5b3; }
+    .sidebar .btn { color: #e8edf2; border-color: #39434e; background: #2b343f; }
+    .sidebar .btn:hover { background: #36414d; border-color: #536271; }
     .user-chip { display: flex; align-items: center; gap: 9px; padding: 6px 2px 13px; }
     .avatar { display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 auto; border-radius: 50%; color: #d9efff; background: #24577a; font-size: 12px; font-weight: 750; }
     .user-chip strong { display: block; font-size: 12px; }
     .user-chip small { display: block; color: var(--muted); font-size: 10px; }
     .main { min-width: 0; }
-    .topbar { height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 28px; border-bottom: 1px solid var(--line); background: #1c2229; }
+    .topbar { height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 28px; border-bottom: 1px solid #39434e; color: #e8edf2; background: #1c2229; }
     .topbar-title { font-weight: 680; }
     .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .topbar .btn { color: #e8edf2; border-color: #39434e; background: #2b343f; }
+    .topbar .btn:hover { background: #36414d; border-color: #536271; }
     .local-badge { border: 1px solid #40515f; border-radius: 20px; padding: 4px 9px; color: #9eb4c5; font-size: 10px; }
     .local-badge button { margin-left: 4px; padding: 0; border: 0; color: #ffd1d1; background: none; font-size: inherit; text-decoration: underline; }
     .content { max-width: 1440px; margin: 0 auto; padding: 28px; }
@@ -87,6 +93,65 @@
     .stat-label { color: var(--muted); font-size: 12px; }
     .stat-value { margin-top: 5px; font-size: 26px; font-weight: 730; letter-spacing: -.03em; }
     .stat-foot { margin-top: 2px; color: #82909d; font-size: 11px; }
+    .content.velgolife-content { display: flex; width: 100%; max-width: none; height: calc(100vh - 62px); flex-direction: column; overflow: hidden; padding: 16px 20px; }
+    .velgolife-page-heading { flex: 0 0 auto; margin-bottom: 12px; }
+    .velgolife-page-heading h1 { margin-bottom: 0; }
+    .velgolife-layout { display: grid; flex: 1; min-height: 0; grid-template-columns: minmax(230px, .75fr) minmax(0, 1.65fr); gap: 12px; }
+    .velgolife-summary { display: grid; min-width: 0; min-height: 0; grid-template-rows: auto minmax(0, 1fr); gap: 10px; }
+    .velgolife-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .velgolife-kpi { min-width: 0; min-height: 64px; padding: 8px 11px; }
+    .velgolife-kpi .stat-value { margin-top: 2px; font-size: 24px; line-height: 1; }
+    .velgolife-kpi .stat-label { font-size: 11px; }
+    .velgolife-availability-card { min-height: 0; overflow: auto; }
+    .velgolife-availability-card .card-header { padding: 8px 10px; }
+    .velgolife-availability-card .card-body { display: grid; align-content: start; gap: 7px; padding: 8px 10px; }
+    .velgolife-availability-item { display: grid; gap: 3px; }
+    .velgolife-people-heading { display: grid; gap: 3px; padding-top: 2px; border-top: 1px solid var(--line); font-size: 10px; }
+    .velgolife-availability-legend { flex-wrap: nowrap; gap: 4px; padding: 0; font-size: 8px; }
+    .velgolife-availability-label { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 11px; }
+    .velgolife-availability-label strong { margin-left: auto; font-size: 10px; white-space: nowrap; }
+    .velgolife-color-dot { width: 8px; height: 8px; flex: 0 0 auto; border-radius: 50%; }
+    .velgolife-color-dot.office { background: #42b883; }
+    .velgolife-color-dot.online { background: #1687d9; }
+    .velgolife-color-dot.unavailable { background: #778391; }
+    .velgolife-bar-segment.office { fill: #42b883; }
+    .velgolife-bar-segment.online { fill: #1687d9; }
+    .velgolife-bar-segment.unavailable { fill: #778391; }
+    .velgolife-progress { height: 6px; overflow: hidden; border-radius: 99px; background: #e9eef4; }
+    .velgolife-progress span { display: block; height: 100%; border-radius: inherit; }
+    .velgolife-progress .office { background: #42b883; }
+    .velgolife-progress .online { background: #1687d9; }
+    .velgolife-progress .unavailable { background: #778391; }
+    .velgolife-availability-count { color: var(--muted); font-size: 9px; }
+    .velgolife-chart-card { display: flex; min-width: 0; min-height: 0; flex-direction: column; }
+    .velgolife-chart-card .card-header { flex: 0 0 auto; padding: 11px 14px; }
+    .velgolife-chart-card .card-header h2 { font-size: 13px; }
+    .velgolife-chart-caption { margin-top: 2px; color: var(--muted); font-size: 10px; }
+    .velgolife-availability-head { align-items: center; }
+    .velgolife-availability-head .velgolife-chart-caption { margin: 0; font-size: 9px; white-space: nowrap; }
+    .velgolife-legend { display: flex; flex: 0 0 auto; flex-wrap: wrap; gap: 7px 12px; padding: 9px 14px 0; color: #536171; font-size: 10px; }
+    .velgolife-legend span { display: inline-flex; align-items: center; gap: 5px; }
+    .velgolife-legend.velgolife-availability-legend { flex-wrap: nowrap; gap: 4px; padding: 0; font-size: 8px; }
+    .velgolife-legend i { width: 8px; height: 8px; border-radius: 50%; }
+    .velgolife-legend .done { background: #1687d9; }
+    .velgolife-legend .progress { background: #d7a84c; }
+    .velgolife-legend .pending { background: #42b883; }
+    .velgolife-legend .overdue { background: #df6969; }
+    .velgolife-chart-area { display: flex; flex: 1; min-height: 0; flex-direction: column; overflow: auto; padding: 6px 12px 12px; }
+    .velgolife-line-chart { display: block; width: 100%; min-height: 240px; flex: 1; }
+    .velgolife-line-chart .grid-line { stroke: #e8edf2; stroke-width: 1; }
+    .velgolife-line-chart .axis-label { fill: #687789; font: 10px "Segoe UI", Inter, system-ui, sans-serif; }
+    .velgolife-line-chart .series-done { stroke: #1687d9; fill: #1687d9; }
+    .velgolife-line-chart .series-progress { stroke: #d7a84c; fill: #d7a84c; }
+    .velgolife-line-chart .series-pending { stroke: #42b883; fill: #42b883; }
+    .velgolife-line-chart .series-overdue { stroke: #df6969; fill: #df6969; }
+    .velgolife-line-chart .series-line { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .velgolife-empty { display: grid; min-height: 180px; flex: 1; place-items: center; padding: 18px; color: var(--muted); text-align: center; font-size: 12px; }
+    .velgolife-people-chart { display: block; width: 100%; height: auto; overflow: visible; }
+    .velgolife-people-chart text { fill: #536171; font: 9px "Segoe UI", Inter, system-ui, sans-serif; }
+    .velgolife-people-chart .bar-track { fill: #edf1f5; }
+    .velgolife-bar-segment { stroke: #fff; stroke-width: 1; }
+    .velgolife-people-scroll { min-height: 0; overflow: auto; }
     .two-col { grid-template-columns: minmax(0, 1.4fr) minmax(250px, .8fr); }
     .card-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 15px 17px; border-bottom: 1px solid var(--line); }
     .card-header h2, .card-header h3 { margin: 0; font-size: 14px; }
@@ -98,6 +163,7 @@
     .task-title-line { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
     .new-task-badge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 99px; color: #fff; background: #b93636; font-size: 9px; font-weight: 750; line-height: 1.4; white-space: nowrap; }
     .task-meta { color: var(--muted); font-size: 11px; margin-top: 3px; }
+    .task-author { margin-bottom: 4px; font-weight: 650; }
     .schedule-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
     .schedule-week-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
     .schedule-week-label { min-width: 190px; text-align: center; font-weight: 650; }
@@ -214,11 +280,47 @@
     .form-grid .full { grid-column: 1/-1; }
     .toast { position: fixed; right: 22px; bottom: 20px; z-index: 50; max-width: min(420px, calc(100vw - 40px)); padding: 12px 16px; border: 1px solid #4b5b69; border-radius: 7px; background: #263440; box-shadow: 0 12px 35px #0008; }
     .toast.error { border-color: #8f4d4d; background: #422b2b; }
-    .link { color: #6db8ee; text-decoration: none; }
+    .link { color: #1676b7; text-decoration: none; }
     .link:hover { text-decoration: underline; }
+    .login-card .btn-primary { color: #1264a0; border-color: #fff; background: #fff; }
+    .login-card .btn-primary:hover { border-color: #e4f2fc; background: #e4f2fc; }
+    #app-screen { background: var(--bg); }
+    #app-screen .task-row, #app-screen td, #app-screen .file-list-item { border-color: #e3e8ee; }
+    #app-screen tr:hover td { background: #f5f7fa; }
+    #app-screen .btn-danger { color: #b93636; }
+    #app-screen .task-description-preview span { color: #1676b7; }
+    #app-screen .stat-foot, #app-screen .file-list .muted, #app-screen .folder-card .folder-count { color: #687789; }
+    #app-screen .schedule-table td:first-child, #app-screen th { color: #687789; background: #eef2f6; }
+    #app-screen .availability-cell { border-color: #cbd5df; color: #465564; background: #f5f7fa; }
+    #app-screen .availability-cell.office { border-color: #9acfb2; color: #236443; background: #e8f6ee; }
+    #app-screen .availability-cell.online { border-color: #9bc9e8; color: #185b87; background: #eaf5fc; }
+    #app-screen .availability-cell.unavailable { border-color: #cbd5df; color: #566575; background: #edf0f3; }
+    #app-screen .status.todo { color: #765619; border-color: #ddc98f; background: #fbf5e5; }
+    #app-screen .status.progress { color: #185b87; border-color: #9bc9e8; background: #eaf5fc; }
+    #app-screen .status.done { color: #236443; border-color: #9acfb2; background: #e8f6ee; }
+    #app-screen .task-description-preview:hover { color: #344f67; }
+    #app-screen .task-description-full, #app-screen .empty strong { color: #344454; }
+    #app-screen .folder-card:hover { border-color: #9db5c8; background: #f5f8fb; }
+    #app-screen .folder-icon { border-color: #c1d9e9; color: #236b9c; background: #edf6fc; }
+    #app-screen .file-list-item:hover, #app-screen .file-list-item.active { background: #f1f5f8; }
+    #app-screen .file-list-delete { color: #b93636; }
+    #app-screen .file-list-delete:hover { border-color: #e4baba; background: #fff2f2; }
+    #app-screen .comment { background: #f1f4f7; }
+    #app-screen .comment time { color: #687789; }
+    #app-screen .comment p { color: #465564; }
+    #app-screen .notice { border-color: #ddc98f; color: #765619; background: #fbf5e5; }
+    #modal-root .modal { border-color: var(--line); }
+    #toast { border-color: #cbd5df; color: #202b36; background: #fff; box-shadow: 0 12px 35px #27384a26; }
+    #toast.error { border-color: #dfb1b1; color: #8b2929; background: #fff1f1; }
     @media (max-width: 900px) {
       .app-shell { grid-template-columns: 190px minmax(0,1fr); }
       .content { padding: 22px 18px; }
+      .content.velgolife-content { height: auto; min-height: calc(100vh - 62px); overflow: visible; padding: 20px 18px; }
+      .velgolife-layout { flex: 0 0 auto; grid-template-columns: minmax(0,1fr); }
+      .velgolife-summary { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-rows: auto; }
+      .velgolife-chart-card { min-height: 420px; }
+      .velgolife-chart-area { min-height: 300px; }
+      .velgolife-availability-card { max-height: 360px; }
       .stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
       .two-col, .profile-layout, .file-layout, .admin-grid { grid-template-columns: minmax(0,1fr); }
       .folder-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -237,6 +339,12 @@
       .nav-btn .nav-text { display: none; }
       .topbar { height: 50px; padding: 0 14px; }
       .content { padding: 18px 12px; }
+      .content.velgolife-content { min-height: calc(100vh - 50px); padding: 16px 12px; }
+      .velgolife-summary { grid-template-columns: minmax(0,1fr); }
+      .velgolife-availability-card { max-height: none; }
+      .velgolife-chart-card { min-height: 360px; }
+      .velgolife-line-chart { min-height: 240px; }
+      .velgolife-chart-area { min-height: 260px; }
       .page-heading { align-items: flex-start; flex-wrap: wrap; }
       .page-heading h1 { font-size: 21px; }
       .heading-actions { flex-wrap: wrap; }
@@ -280,8 +388,7 @@
           <button id="user-login" type="submit" class="btn btn-primary wide" disabled>Sign in</button>
         </form>
       </div>
-      <div id="login-cloud-status" class="cloud-connection" role="status" aria-live="polite">Connecting to Google Drive…</div>
-      <div class="demo-note">Sign-in is not server-side security. Anyone with the Apps Script deployment URL may access its Drive data. Do not store confidential information.</div>
+      <div id="login-cloud-status" class="cloud-connection hidden" role="status" aria-live="polite"></div>
     </div>
   </section>
 
@@ -295,7 +402,7 @@
       </div>
     </aside>
     <main class="main">
-      <header class="topbar"><div id="topbar-title" class="topbar-title">Overview</div><div class="topbar-right"><span id="app-cloud-status" class="local-badge">● GOOGLE DRIVE</span><button id="mobile-logout" class="btn btn-sm">Sign out</button></div></header>
+      <header class="topbar"><div id="topbar-title" class="topbar-title">Overview</div><div class="topbar-right"><span id="app-cloud-status" class="local-badge hidden" role="status" aria-live="polite"></span><button id="mobile-logout" class="btn btn-sm">Sign out</button></div></header>
       <div id="content" class="content"></div>
     </main>
   </div>
@@ -325,7 +432,7 @@
       const STATUS_CLASS = { "Pending": "todo", "In Progress": "progress", "Done": "done" };
       const NAV_ITEMS = [
         ["dashboard", "⌂", "Overview"], ["profile", "◉", "Profile"], ["tasks", "☷", "Plan and Tasks"],
-        ["schedule", "▦", "Schedule"],
+        ["velgolife", "▤", "VelgoLife"], ["schedule", "▦", "Schedule"],
         ["files", "▧", "Files and CAD"], ["admin", "⚙", "Administration"]
       ];
       const AVAILABILITY_OPTIONS = [
@@ -419,10 +526,12 @@
         if (loginStatus) {
           loginStatus.innerHTML = status;
           loginStatus.classList.toggle("error", error);
+          loginStatus.classList.toggle("hidden", !error);
         }
         if (appStatus) {
           appStatus.innerHTML = error ? `● DRIVE SYNC ERROR${retry ? ` <button type="button" data-cloud-retry>Retry</button>` : ""}` : `● ${escapeHtml(message.toUpperCase())}`;
           appStatus.classList.toggle("error", error);
+          appStatus.classList.toggle("hidden", !error);
         }
         document.querySelectorAll("[data-cloud-retry]").forEach(button => button.addEventListener("click", initializeCloud));
       }
@@ -463,9 +572,12 @@
           input.value = JSON.stringify(payload);
           form.append(input);
           let settled = false;
+          let lastPollError = null;
+          let pollTimer;
           const cleanup = () => {
             window.removeEventListener("message", onMessage);
             clearTimeout(timer);
+            clearTimeout(pollTimer);
             iframe.remove();
             form.remove();
           };
@@ -480,10 +592,35 @@
             if (event.data.ok) finish(null, event.data.result);
             else finish(new Error(event.data.error || "Google Drive rejected the request."));
           };
-          const timer = setTimeout(() => finish(new Error("Google Drive did not confirm the save. Check the Apps Script deployment and try again.")), 60000);
+          const pollResult = async () => {
+            try {
+              const response = await loadRemoteJsonp("result", { requestId });
+              if (response?.requestId === requestId) {
+                if (!response.ok) {
+                  finish(new Error(response.error || "Google Drive rejected the request."));
+                  return;
+                }
+                let result = response.result;
+                if (action.action === "saveState") {
+                  const envelope = await loadRemoteJsonp("load");
+                  if (!envelope?.state) throw new Error("Google Drive did not return the saved platform state.");
+                  result = { ...result, state: envelope.state };
+                }
+                finish(null, result);
+                return;
+              }
+            } catch (error) {
+              lastPollError = error;
+            }
+            if (!settled) pollTimer = setTimeout(pollResult, 750);
+          };
+          const timer = setTimeout(() => finish(
+            lastPollError || new Error("Google Drive did not confirm the save. Check the Apps Script deployment and try again.")
+          ), 60000);
           window.addEventListener("message", onMessage);
           document.body.append(iframe, form);
           form.submit();
+          pollTimer = setTimeout(pollResult, 400);
         });
       }
       function stateForCloud() {
@@ -581,6 +718,22 @@
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
         catch (error) { console.warn("Could not cache shared platform data in this browser.", error); }
         refreshActivePage();
+        (Array.isArray(result.taskNotifications) ? result.taskNotifications : []).forEach(notification => {
+          if (notification.status === "already_sent") return;
+          const taskId = String(notification.taskId || "Task");
+          if (notification.status === "sent") {
+            notify(`Email notification sent for ${taskId}.`);
+            return;
+          }
+          const reasons = {
+            missing_email: "the assignee has no email address in their profile",
+            invalid_email: "the assignee's email address is invalid",
+            assignee_missing: "the assignee is no longer in the employee list",
+            invalid_task: "the task number is invalid"
+          };
+          const reason = reasons[notification.status] || notification.message || "Apps Script could not send the email.";
+          notify(`${taskId} was saved, but its email notification was not sent: ${reason}.`, true);
+        });
       }
       function setCloudSaveStatus(promise) {
         cloudSavePending += 1;
@@ -857,8 +1010,13 @@
       const userById = userId => state.users.find(user => user.id === userId);
       const isAdmin = () => Boolean(session?.isAdmin);
       const canManage = () => !isAdmin() && session?.department === "CEO / Admin";
+      const canDeleteTask = task => Boolean(task && (isAdmin() || task.createdBy === session?.id));
       const canDeleteFile = file => isAdmin() || canManage() || file?.createdBy === session?.id || (!file?.createdBy && file?.author === displayName(session));
       const displayName = user => [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.username || "User";
+      const taskCreatorName = task => {
+        const creator = task.createdBy ? userById(task.createdBy) : null;
+        return creator ? displayName(creator) : task.createdByName || "Creator not recorded";
+      };
       const initials = user => `${user?.firstName?.[0] || user?.username?.[0] || "V"}${user?.lastName?.[0] || ""}`.toUpperCase();
       const fmtDate = date => date ? new Date(`${date}T00:00:00`).toLocaleDateString("en-GB") : "—";
       const statusBadge = status => `<span class="status ${STATUS_CLASS[status] || "todo"}">${escapeHtml(status)}</span>`;
@@ -943,20 +1101,22 @@
         if (!session) return renderLogin();
         if (isAdmin() && activePage !== "admin") activePage = "admin";
         if (!isAdmin() && activePage === "admin") activePage = "dashboard";
+        if (!canManage() && activePage === "velgolife") activePage = "dashboard";
         if (activePage === "tasks") markAssignedTasksViewed();
         $("#login-screen").classList.add("hidden");
         $("#app-screen").classList.remove("hidden");
+        $("#content").classList.toggle("velgolife-content", activePage === "velgolife");
         $("#sidebar-avatar").textContent = initials(session);
         $("#sidebar-name").textContent = displayName(session);
         $("#sidebar-role").textContent = isAdmin() ? "System Administrator" : session.department;
         const unreadCount = unreadAssignedTasks().length;
-        $("#main-nav").innerHTML = NAV_ITEMS.filter(([key]) => isAdmin() ? key === "admin" : key !== "admin").map(([key, icon, title]) =>
+        $("#main-nav").innerHTML = NAV_ITEMS.filter(([key]) => isAdmin() ? key === "admin" : key !== "admin" && (key !== "velgolife" || canManage())).map(([key, icon, title]) =>
           `<button class="nav-btn ${activePage === key ? "active" : ""}" data-page="${key}" aria-label="${key === "tasks" && unreadCount ? `${title}, new tasks: ${unreadCount}` : title}"><span class="nav-icon">${icon}</span><span class="nav-text">${title}</span>${key === "tasks" && unreadCount ? `<span class="nav-unread-badge" aria-hidden="true">${unreadCount > 9 ? "9+" : unreadCount}</span>` : ""}</button>`
         ).join("");
         $("#main-nav").querySelectorAll("[data-page]").forEach(button => button.addEventListener("click", () => { activePage = button.dataset.page; renderApp(); }));
         const title = NAV_ITEMS.find(([key]) => key === activePage)?.[2] || "Overview";
         $("#topbar-title").textContent = title;
-        const pages = { dashboard: renderDashboard, profile: renderProfile, tasks: renderTasks, schedule: renderSchedule, files: renderFiles, admin: renderAdmin };
+        const pages = { dashboard: renderDashboard, profile: renderProfile, tasks: renderTasks, schedule: renderSchedule, velgolife: renderVelgoLife, files: renderFiles, admin: renderAdmin };
         if (activePage === "files") renderFiles(options.preserveFilePreview === true);
         else (pages[activePage] || renderDashboard)();
       }
@@ -982,10 +1142,9 @@
             <section class="card"><div class="card-header"><h2>Upcoming Tasks</h2><button class="btn btn-sm" data-goto="tasks">All Tasks →</button></div>
               ${recent.length ? `<div class="task-list">${recent.map(taskRow).join("")}</div>` : empty("No tasks yet", "Create the first task for the team.")}</section>
             <section class="card"><div class="card-header"><h2>Quick Access</h2></div><div class="card-body">
-              <p class="muted" style="margin-top:0">Team documents and engineering files.</p>
               ${isAdmin()
                 ? (state.driveUrl ? `<a class="btn wide" href="${safeUrl(state.driveUrl)}" target="_blank" rel="noopener noreferrer">↗ Open Google Drive</a>` : `<div class="notice">Google Drive link is not set up yet.</div>`)
-                : `<div class="notice">Direct Google Drive access is restricted to the System Admin. Use Project Files here to work with team files.</div>`}
+                  : ""}
               <button class="btn wide" style="margin-top:9px" data-goto="files">▧ Go to Project Files</button>
               <div style="margin-top:19px"><div class="eyebrow">YOUR ROLE</div><div style="margin-top:5px;font-weight:650">${escapeHtml(isAdmin() ? "System Admin" : session.department)}</div></div>
             </div></section>
@@ -993,21 +1152,181 @@
         wirePageActions();
       }
       function stat(label, value, foot) { return `<section class="card stat-card"><div class="stat-label">${label}</div><div class="stat-value">${value}</div><div class="stat-foot">${foot}</div></section>`; }
+      function taskDeadlineDate(task) {
+        const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(task?.deadline || ""));
+        if (!match) return null;
+        const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+        return date.getFullYear() === Number(match[1]) && date.getMonth() === Number(match[2]) - 1 && date.getDate() === Number(match[3]) ? date : null;
+      }
+      function availabilityStats() {
+        const counts = Object.fromEntries(AVAILABILITY_OPTIONS.map(option => [option.value, 0]));
+        const people = state.users.map(user => {
+          const personCounts = Object.fromEntries(AVAILABILITY_OPTIONS.map(option => [option.value, 0]));
+          const days = state.availability?.[user.id];
+          if (days && typeof days === "object" && !Array.isArray(days)) {
+            Object.values(days).forEach(hours => {
+              if (!hours || typeof hours !== "object" || Array.isArray(hours)) return;
+              Object.values(hours).forEach(value => {
+                if (!Object.hasOwn(personCounts, value)) return;
+                personCounts[value] += 1;
+                counts[value] += 1;
+              });
+            });
+          }
+          return { user, counts: personCounts, total: Object.values(personCounts).reduce((sum, count) => sum + count, 0) };
+        });
+        return { people, counts, total: Object.values(counts).reduce((sum, count) => sum + count, 0) };
+      }
+      function taskTrendSvg(tasks) {
+        const datedTasks = tasks.map(task => ({ task, date: taskDeadlineDate(task) })).filter(item => item.date);
+        if (!datedTasks.length) return `<div class="velgolife-empty">No tasks with a valid deadline yet.</div>`;
+        const latestDate = datedTasks.reduce((latest, item) => item.date > latest ? item.date : latest, datedTasks[0].date);
+        const months = Array.from({ length: 6 }, (_, index) => new Date(latestDate.getFullYear(), latestDate.getMonth() - 5 + index, 1));
+        const buckets = months.map(date => ({
+          date,
+          key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`,
+          total: 0,
+          counts: { done: 0, progress: 0, pending: 0, overdue: 0 }
+        }));
+        const bucketByMonth = new Map(buckets.map(bucket => [bucket.key, bucket]));
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        datedTasks.forEach(({ task, date }) => {
+          const bucket = bucketByMonth.get(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`);
+          if (!bucket) return;
+          bucket.total += 1;
+          if (task.status === "Done") bucket.counts.done += 1;
+          else if (date < today) bucket.counts.overdue += 1;
+          else if (task.status === "In Progress") bucket.counts.progress += 1;
+          else bucket.counts.pending += 1;
+        });
+        if (!buckets.some(bucket => bucket.total)) return `<div class="velgolife-empty">No tasks fall within the latest six deadline months.</div>`;
+        const series = [
+          { key: "done", label: "Completed", className: "done" },
+          { key: "progress", label: "In progress", className: "progress" },
+          { key: "pending", label: "Pending", className: "pending" },
+          { key: "overdue", label: "Overdue", className: "overdue" }
+        ];
+        const x = index => 58 + index * 100;
+        const y = percent => 205 - percent * 1.65;
+        const grid = [0, 25, 50, 75, 100].map(percent => {
+          const lineY = y(percent);
+          return `<line class="grid-line" x1="52" y1="${lineY}" x2="570" y2="${lineY}"></line><text class="axis-label" x="42" y="${lineY + 3}" text-anchor="end">${percent}%</text>`;
+        }).join("");
+        const seriesMarkup = series.map(item => {
+          let path = "";
+          let hasPreviousPoint = false;
+          const points = buckets.map((bucket, index) => {
+            if (!bucket.total) {
+              hasPreviousPoint = false;
+              return "";
+            }
+            const percent = bucket.counts[item.key] / bucket.total * 100;
+            const command = hasPreviousPoint ? "L" : "M";
+            hasPreviousPoint = true;
+            path += `${command}${x(index)},${y(percent)} `;
+            const monthLabel = bucket.date.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+            return `<circle class="series-${item.className}" cx="${x(index)}" cy="${y(percent)}" r="3.5"><title>${escapeHtml(monthLabel)} · ${item.label}: ${Math.round(percent)}% (${bucket.counts[item.key]} of ${bucket.total})</title></circle>`;
+          }).join("");
+          return `<path class="series-${item.className} series-line" d="${path.trim()}"></path>${points}`;
+        }).join("");
+        const monthLabels = buckets.map((bucket, index) => `<text class="axis-label" x="${x(index)}" y="235" text-anchor="middle">${escapeHtml(bucket.date.toLocaleDateString("en-GB", { month: "short", year: "2-digit" }))}</text>`).join("");
+        return `<svg class="velgolife-line-chart" viewBox="0 0 600 255" role="img" aria-label="Task status percentages grouped by deadline month for the latest six months">
+          ${grid}${seriesMarkup}${monthLabels}</svg>`;
+      }
+      function peopleAvailabilitySvg(people) {
+        if (!people.length) return `<div class="velgolife-empty">No employee profiles yet.</div>`;
+        const width = 250;
+        const labelWidth = 98;
+        const barWidth = 145;
+        const barX = labelWidth;
+        const rowHeight = 24;
+        const height = 20 + people.length * rowHeight;
+        const axis = `<text x="${barX}" y="12">0%</text><text x="${barX + barWidth}" y="12" text-anchor="end">100%</text>`;
+        const rows = people.map((person, index) => {
+          const top = 16 + index * rowHeight;
+          const fullName = displayName(person.user);
+          const shortName = fullName.length > 14 ? `${fullName.slice(0, 13)}…` : fullName;
+          let offset = 0;
+          const segments = AVAILABILITY_OPTIONS.map(option => {
+            const value = person.counts[option.value];
+            const segmentWidth = person.total ? barWidth * value / person.total : 0;
+            const segment = segmentWidth > 0
+              ? `<rect class="velgolife-bar-segment ${option.value}" x="${barX + offset}" y="${top + 1}" width="${segmentWidth}" height="13"><title>${escapeHtml(fullName)} · ${escapeHtml(option.label)}: ${value} (${Math.round(value / person.total * 100)}%)</title></rect>`
+              : "";
+            offset += segmentWidth;
+            return segment;
+          }).join("");
+          return `<text x="0" y="${top + 11}">${escapeHtml(shortName)}</text>${person.total
+            ? `<rect class="bar-track" x="${barX}" y="${top + 1}" width="${barWidth}" height="13" rx="3"></rect>${segments}`
+            : `<text x="${barX + 4}" y="${top + 11}">No recorded slots</text>`}`;
+        }).join("");
+        return `<svg class="velgolife-people-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Stacked availability percentages for every employee">
+          ${axis}${rows}</svg>`;
+      }
+      function renderVelgoLife() {
+        if (!canManage()) return;
+        const tasks = state.tasks;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const completed = tasks.filter(task => task.status === "Done").length;
+        const inProgress = tasks.filter(task => task.status === "In Progress").length;
+        const overdue = tasks.filter(task => {
+          const deadline = taskDeadlineDate(task);
+          return task.status !== "Done" && deadline && deadline < today;
+        }).length;
+        const availability = availabilityStats();
+        const availabilityRows = AVAILABILITY_OPTIONS.map(option => {
+          const count = availability.counts[option.value];
+          const percent = availability.total ? Math.round(count / availability.total * 100) : 0;
+          return `<div class="velgolife-availability-item"><div class="velgolife-availability-label"><i class="velgolife-color-dot ${option.value}"></i><span>${escapeHtml(option.label)}</span><strong>${percent}% · ${count}</strong></div><div class="velgolife-progress"><span class="${option.value}" style="width:${percent}%"></span></div></div>`;
+        }).join("");
+        const availabilityLegend = AVAILABILITY_OPTIONS.map(option => `<span><i class="velgolife-color-dot ${option.value}"></i>${escapeHtml(option.label)}</span>`).join("");
+        const taskLegend = [
+          ["done", "Completed"], ["progress", "In progress"], ["pending", "Pending"], ["overdue", "Overdue"]
+        ].map(([className, label]) => `<span><i class="${className}"></i>${label}</span>`).join("");
+        $("#content").innerHTML = `<div class="page-heading velgolife-page-heading"><div><div class="eyebrow">CEO Overview</div><h1>VelgoLife</h1></div></div>
+          <div class="velgolife-layout">
+            <aside class="velgolife-summary">
+              <div class="velgolife-kpis">
+                <section class="card stat-card velgolife-kpi"><div class="stat-label">Team Members</div><div class="stat-value">${state.users.length}</div></section>
+                <section class="card stat-card velgolife-kpi"><div class="stat-label">Completed Tasks</div><div class="stat-value">${completed}</div></section>
+                <section class="card stat-card velgolife-kpi"><div class="stat-label">In Progress Tasks</div><div class="stat-value">${inProgress}</div></section>
+                <section class="card stat-card velgolife-kpi"><div class="stat-label">Overdue Tasks</div><div class="stat-value">${overdue}</div></section>
+              </div>
+              <section class="card velgolife-availability-card">
+                <div class="card-header velgolife-availability-head"><h2>Availability</h2><div class="velgolife-chart-caption">${availability.total} filled · blanks ignored</div></div>
+                <div class="card-body">${availability.total
+                  ? availabilityRows
+                  : `<div class="velgolife-availability-count">No availability recorded yet.</div>`}
+                  <div class="velgolife-people-heading"><strong>By employee</strong><div class="velgolife-legend velgolife-availability-legend">${availabilityLegend}</div></div>
+                  <div class="velgolife-people-scroll">${peopleAvailabilitySvg(availability.people)}</div>
+                </div>
+              </section>
+            </aside>
+            <section class="card velgolife-chart-card">
+              <div class="card-header"><div><h2>Task status by deadline</h2><div class="velgolife-chart-caption">Current status by deadline month · latest six task months</div></div></div>
+              <div class="velgolife-legend">${taskLegend}</div>
+              <div class="velgolife-chart-area">${taskTrendSvg(tasks)}</div>
+            </section>
+          </div>`;
+      }
       function isNewForAssignee(task) { return !isAdmin() && task.assigneeId === session.id && task.assigneeViewed === false; }
       function taskRow(task) {
         const assignee = userById(task.assigneeId);
-        return `<div class="task-row"><div><div class="task-title-line"><span class="task-title">${escapeHtml(task.title)}</span>${isNewForAssignee(task) ? `<span class="new-task-badge">New Task</span>` : ""}</div><div class="task-meta">${escapeHtml(task.id)} · ${escapeHtml(assignee ? displayName(assignee) : task.department)} · due ${fmtDate(task.deadline)}</div></div>${statusBadge(task.status)}</div>`;
+        return `<div class="task-row"><div><div class="task-title-line"><span class="task-title">${escapeHtml(task.title)}</span>${isNewForAssignee(task) ? `<span class="new-task-badge">New Task</span>` : ""}</div><div class="task-meta">From: ${escapeHtml(taskCreatorName(task))} · ${escapeHtml(task.id)} · ${escapeHtml(assignee ? displayName(assignee) : task.department)} · due ${fmtDate(task.deadline)}</div></div>${statusBadge(task.status)}</div>`;
       }
       function taskDescription(task) {
         const description = String(task.description || "");
-        if (description.length <= TASK_DESCRIPTION_PREVIEW_LIMIT) return `<div class="table-sub">${escapeHtml(description)}</div>`;
+        const author = `<div class="table-sub task-author">From: ${escapeHtml(taskCreatorName(task))}</div>`;
+        if (description.length <= TASK_DESCRIPTION_PREVIEW_LIMIT) return `${author}<div class="table-sub">${escapeHtml(description)}</div>`;
         const preview = `${description.slice(0, TASK_DESCRIPTION_PREVIEW_LIMIT).trimEnd()}…`;
-        return `<button type="button" class="task-description-preview" data-read-task-description="${escapeHtml(task.id)}" aria-label="Open full description for task ${escapeHtml(task.id)}">${escapeHtml(preview)} <span>Read full description</span></button>`;
+        return `${author}<button type="button" class="task-description-preview" data-read-task-description="${escapeHtml(task.id)}" aria-label="Open full description for task ${escapeHtml(task.id)}">${escapeHtml(preview)} <span>Read full description</span></button>`;
       }
       function openTaskDescription(taskId) {
         const task = state.tasks.find(item => item.id === taskId);
         if (!task) return;
-        $("#modal-root").innerHTML = `<div class="modal-backdrop"><section class="modal" role="dialog" aria-modal="true" aria-label="Task description"><div class="modal-head"><div><div class="eyebrow">${escapeHtml(task.id)}</div><h2 style="margin-top:3px">${escapeHtml(task.title)}</h2></div><button type="button" class="btn btn-sm" data-close aria-label="Close">✕</button></div><div class="modal-body"><div class="task-description-full">${escapeHtml(task.description || "")}</div></div><div class="modal-foot"><button type="button" class="btn" data-close>Close</button></div></section></div>`;
+        $("#modal-root").innerHTML = `<div class="modal-backdrop"><section class="modal" role="dialog" aria-modal="true" aria-label="Task description"><div class="modal-head"><div><div class="eyebrow">${escapeHtml(task.id)}</div><h2 style="margin-top:3px">${escapeHtml(task.title)}</h2></div><button type="button" class="btn btn-sm" data-close aria-label="Close">✕</button></div><div class="modal-body"><div class="table-sub task-author">From: ${escapeHtml(taskCreatorName(task))}</div><div class="task-description-full">${escapeHtml(task.description || "")}</div></div><div class="modal-foot"><button type="button" class="btn" data-close>Close</button></div></section></div>`;
         $("#modal-root").querySelectorAll("[data-close]").forEach(button => button.addEventListener("click", closeModal));
         $("#modal-root").querySelector(".modal-backdrop").addEventListener("click", event => { if (event.target.classList.contains("modal-backdrop")) closeModal(); });
       }
@@ -1030,22 +1349,25 @@
         const rows = tasks.map(task => {
           const assignee = userById(task.assigneeId);
           const canChange = task.assigneeId === session.id && !isAdmin();
-          const searchText = `${task.id} ${task.title} ${task.description || ""} ${displayName(assignee)}`.toLocaleLowerCase("en");
+          const searchText = `${task.id} ${task.title} ${task.description || ""} ${displayName(assignee)} ${taskCreatorName(task)}`.toLocaleLowerCase("en");
           const statusControl = canManage()
             ? `<select class="task-status-select" data-task-status="${escapeHtml(task.id)}" aria-label="Status for task ${escapeHtml(task.id)}">${STATUSES.map(status => `<option value="${escapeHtml(status)}" ${status === task.status ? "selected" : ""}>${escapeHtml(status)}</option>`).join("")}</select>`
             : canChange && task.status === "Pending"
               ? `<button class="btn btn-sm" data-status-task="${escapeHtml(task.id)}">Start</button>`
               : "";
           const attachmentList = (task.attachments || []).map(file => `<button type="button" class="btn btn-sm" data-download-task-file="${escapeHtml(file.id)}" data-file-name="${escapeHtml(file.name)}">↓ ${escapeHtml(file.name)}</button>`).join(" ");
-          return `<tr data-search="${escapeHtml(searchText)}" data-status="${escapeHtml(task.status)}"><td><span class="table-main">${escapeHtml(task.id)}</span></td><td><div class="table-main">${escapeHtml(task.title)}</div>${taskDescription(task)}${attachmentList ? `<div class="file-actions">${attachmentList}</div>` : ""}</td><td>${escapeHtml(assignee ? displayName(assignee) : task.department)}</td><td>${fmtDate(task.deadline)}</td><td>${statusBadge(task.status)}</td><td>${statusControl}</td></tr>`;
+          const deleteControl = canDeleteTask(task) ? `<button type="button" class="btn btn-sm btn-danger" data-delete-task="${escapeHtml(task.id)}">Delete</button>` : "";
+          const actions = [statusControl, deleteControl].filter(Boolean).join(" ");
+          return `<tr data-search="${escapeHtml(searchText)}" data-status="${escapeHtml(task.status)}"><td><span class="table-main">${escapeHtml(task.id)}</span></td><td><div class="table-main">${escapeHtml(task.title)}</div>${taskDescription(task)}${attachmentList ? `<div class="file-actions">${attachmentList}</div>` : ""}</td><td>${escapeHtml(assignee ? displayName(assignee) : task.department)}</td><td>${fmtDate(task.deadline)}</td><td>${statusBadge(task.status)}</td><td>${actions}</td></tr>`;
         }).join("");
         $("#content").innerHTML = `${pageHeading("Planning", "Plan and Tasks", canManage() ? "Create tasks and track team progress." : "Tasks assigned to your profile and department.", canManage() ? '<button class="btn btn-primary" data-action="new-task">＋ New Task</button>' : "")}
           <section class="card"><div class="filter-row"><input id="task-search" type="search" placeholder="Search by ID or title…"><select id="task-filter"><option value="">All statuses</option>${STATUSES.map(status => `<option>${status}</option>`).join("")}</select></div>
-          <div class="table-wrap"><table><thead><tr><th>ID</th><th>Task</th><th>Assignee</th><th>Deadline</th><th>Status</th><th>${canManage() ? "Change Status" : "Action"}</th></tr></thead><tbody id="tasks-body">${rows || `<tr><td colspan="6">${empty("No tasks found", canManage() ? "Create the first task." : "Contact your manager to get assigned tasks.")}</td></tr>`}</tbody></table></div></section>`;
+          <div class="table-wrap"><table><thead><tr><th>ID</th><th>Task</th><th>Assignee</th><th>Deadline</th><th>Status</th><th>Actions</th></tr></thead><tbody id="tasks-body">${rows || `<tr><td colspan="6">${empty("No tasks found", canManage() ? "Create the first task." : "Contact your manager to get assigned tasks.")}</td></tr>`}</tbody></table></div></section>`;
         $("#task-search").addEventListener("input", filterTasks);
         $("#task-filter").addEventListener("change", filterTasks);
         $("#content").querySelectorAll("[data-status-task]").forEach(button => button.addEventListener("click", () => updateTaskStatus(button.dataset.statusTask, "In Progress")));
         $("#content").querySelectorAll("[data-task-status]").forEach(select => select.addEventListener("change", () => updateTaskStatus(select.dataset.taskStatus, select.value)));
+        $("#content").querySelectorAll("[data-delete-task]").forEach(button => button.addEventListener("click", () => deleteTask(button.dataset.deleteTask)));
         $("#content").querySelectorAll("[data-read-task-description]").forEach(button => button.addEventListener("click", () => openTaskDescription(button.dataset.readTaskDescription)));
         $("#content").querySelectorAll("[data-download-task-file]").forEach(button => button.addEventListener("click", async () => {
           try { await downloadTaskAttachment(button.dataset.downloadTaskFile, button.dataset.fileName); }
@@ -1152,6 +1474,47 @@
         if (!saveState()) return;
         renderApp();
         notify("Task status updated.");
+      }
+      async function deleteTask(taskId) {
+        const task = state.tasks.find(item => item.id === taskId);
+        if (!task || !canDeleteTask(task)) {
+          notify("You can only delete tasks you created.", true);
+          return;
+        }
+        const attachments = task.attachments || [];
+        const attachmentNotice = attachments.length ? ` and its ${attachments.length} attachment${attachments.length === 1 ? "" : "s"}` : "";
+        if (!confirm(`Delete "${task.title}"${attachmentNotice}? This cannot be undone.`)) return;
+        const previousTasks = state.tasks;
+        state.tasks = state.tasks.filter(item => item.id !== taskId);
+        if (!saveState()) {
+          state.tasks = previousTasks;
+          return;
+        }
+        await cloudSaveQueue;
+        if (cloudLastError) {
+          state.tasks = previousTasks;
+          saveState();
+          notify("Task was not deleted because Drive could not save the updated task list.", true);
+          return;
+        }
+        let cleanupFailed = false;
+        try {
+          await deleteTaskAttachments(attachments.map(file => file.id));
+        } catch (error) {
+          console.error("Could not remove task attachments from local storage.", error);
+          cleanupFailed = true;
+        }
+        for (const attachment of attachments) {
+          if (!attachment.driveFileId) continue;
+          try {
+            await postCloudAction({ action: "deleteFile", fileId: attachment.driveFileId });
+          } catch (error) {
+            console.error("Could not delete a task attachment from Google Drive.", error);
+            cleanupFailed = true;
+          }
+        }
+        renderApp();
+        notify(cleanupFailed ? "Task deleted, but some attachments could not be removed." : "Task deleted.", cleanupFailed);
       }
       function safeUrl(url) {
         try { const parsed = new URL(url); return ["https:", "http:"].includes(parsed.protocol) ? escapeHtml(parsed.href) : "#"; }
@@ -1656,10 +2019,9 @@
       }
       function renderAdmin() {
         if (!isAdmin()) { activePage = "dashboard"; return renderApp(); }
-        const userRows = state.users.map(user => `<tr><td><div class="table-main">${escapeHtml(displayName(user))}</div></td><td><code>${escapeHtml(user.username)}</code></td><td>${escapeHtml(user.department)}</td><td>${fmtDate(user.birthDate)}</td><td><button class="btn btn-sm" data-edit-user="${escapeHtml(user.id)}">Edit</button> <button class="btn btn-sm btn-danger" data-delete-user="${escapeHtml(user.id)}">Delete</button></td></tr>`).join("");
+        const userRows = state.users.map(user => `<tr><td><div class="table-main">${escapeHtml(displayName(user))}</div></td><td><code>${escapeHtml(user.username)}</code></td><td>${escapeHtml(user.department)}</td><td>${fmtDate(user.birthDate)}</td><td>${escapeHtml(user.email || "Not set")}</td><td><button class="btn btn-sm" data-edit-user="${escapeHtml(user.id)}">Edit</button> <button class="btn btn-sm btn-danger" data-delete-user="${escapeHtml(user.id)}">Delete</button></td></tr>`).join("");
         $("#content").innerHTML = `${pageHeading("Platform Management", "Employees and Google Drive", "Add employees, assign usernames, and configure the shared Drive link.", '<button class="btn btn-primary" data-action="new-user">＋ Add Employee</button>')}
-          <div class="notice" style="margin-bottom:16px">Sign-in is not server-side security. Anyone with the Apps Script deployment URL may access its Drive data. Do not store confidential information.</div>
-          <div class="grid admin-grid"><section class="card"><div class="card-header"><h2>Employees</h2><span class="muted">${state.users.length} profiles</span></div><div class="table-wrap"><table><thead><tr><th>Employee</th><th>Login Username</th><th>Role / Department</th><th>Date of Birth</th><th>Actions</th></tr></thead><tbody>${userRows}</tbody></table></div></section>
+          <div class="grid admin-grid"><section class="card"><div class="card-header"><h2>Employees</h2><span class="muted">${state.users.length} profiles</span></div><div class="table-wrap"><table><thead><tr><th>Employee</th><th>Login Username</th><th>Role / Department</th><th>Date of Birth</th><th>Email Address</th><th>Actions</th></tr></thead><tbody>${userRows}</tbody></table></div></section>
           <section class="card"><div class="card-header"><h2>Platform Settings</h2></div><div class="card-body"><form id="settings-form" class="settings-form">
             <div class="field"><label for="drive-url">Global Google Drive Link</label><input id="drive-url" type="url" placeholder="https://drive.google.com/drive/folders/…" value="${escapeHtml(state.driveUrl)}"></div>
             <button class="btn btn-primary">Save Settings</button>
@@ -1701,7 +2063,7 @@
       function openUserModal(userId) {
         const user = userId ? userById(userId) : null;
         const field = (label, name, value, type = "text", required = true) => `<div class="field"><label>${label}</label><input name="${name}" type="${type}" value="${escapeHtml(value || "")}" ${required ? "required" : ""}></div>`;
-        const body = `<div class="form-grid">${field("First Name", "firstName", user?.firstName)}${field("Last Name", "lastName", user?.lastName)}<div class="field"><label>Login Username</label><input name="username" type="text" value="${escapeHtml(user?.username || "")}" autocomplete="off" required><span class="muted" style="font-size:10px">The employee's unique login, not their role or job title.</span></div>${field("Date of Birth", "birthDate", user?.birthDate, "date", false)}<div class="field full"><label>Role / Department</label><select name="department" required>${DEPARTMENTS.map(dep => `<option ${user?.department === dep ? "selected" : ""}>${dep}</option>`).join("")}</select></div></div>`;
+        const body = `<div class="form-grid">${field("First Name", "firstName", user?.firstName)}${field("Last Name", "lastName", user?.lastName)}<div class="field"><label>Login Username</label><input name="username" type="text" value="${escapeHtml(user?.username || "")}" autocomplete="off" required><span class="muted" style="font-size:10px">The employee's unique login, not their role or job title.</span></div>${field("Email Address", "email", user?.email, "email", !user)}${field("Date of Birth", "birthDate", user?.birthDate, "date", false)}<div class="field full"><label>Role / Department</label><select name="department" required>${DEPARTMENTS.map(dep => `<option ${user?.department === dep ? "selected" : ""}>${dep}</option>`).join("")}</select></div></div>`;
         showModal(user ? "Edit Profile" : "Add Employee", body, form => {
           const data = Object.fromEntries(form.entries());
           const username = String(data.username).trim();
@@ -1729,7 +2091,7 @@
       }
       function openTaskModal() {
         if (!canManage()) return notify("Only the CEO / Admin can create tasks.", true);
-        const eligible = state.users.filter(user => user.department !== "CEO / Admin");
+        const eligible = state.users;
         const body = `<div class="form-grid"><div class="field full"><label>Task Title</label><input name="title" maxlength="160" required></div>
           <div class="field full"><label>Description</label><textarea name="description" maxlength="3000" placeholder="Expected outcome and completion criteria"></textarea></div>
           <div class="field"><label>Deadline</label><input name="deadline" type="date" required></div>
@@ -1761,7 +2123,7 @@
             notify(error.message || "Could not save task attachments.", true);
             return;
           }
-          const task = { id: `TASK-${String(number).padStart(3,"0")}`, title: String(data.title).trim(), description: String(data.description).trim(), deadline: data.deadline, assigneeId: user.id, department: user.department, status: "Pending", assigneeViewed: false, createdAt: new Date().toISOString(), attachments: attachments.map(item => item.metadata) };
+          const task = { id: `TASK-${String(number).padStart(3,"0")}`, title: String(data.title).trim(), description: String(data.description).trim(), deadline: data.deadline, assigneeId: user.id, department: user.department, createdBy: session.id, createdByName: displayName(session), status: "Pending", assigneeViewed: false, createdAt: new Date().toISOString(), attachments: attachments.map(item => item.metadata) };
           state.tasks.unshift(task);
           if (!saveState()) {
             state.tasks.shift();

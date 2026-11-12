@@ -1,6 +1,19 @@
 const DRIVE_FOLDER_ID = "1XbaqBJIku3pfH87Rd-A6Zhuwx789DBQC";
 const STATE_FILE_NAME = "VELGO-data.json";
 const MAX_FILE_BYTES = 20 * 1024 * 1024;
+const PLATFORM_URL = "https://alex0012334.github.io/VELGOO/";
+
+function sendTestEmail() {
+  const recipient = Session.getEffectiveUser().getEmail();
+  if (!recipient) {
+    throw new Error("Could not determine the Google account running this script.");
+  }
+  MailApp.sendEmail(
+    recipient,
+    "VELGO email notification test",
+    "This is a test email from the VELGO R&D Platform. Email delivery is authorized."
+  );
+}
 
 function doGet(e) {
   const action = String(e.parameter.action || "load");
@@ -19,19 +32,25 @@ function doGet(e) {
       base64: Utilities.base64Encode(file.getBlob().getBytes())
     });
   }
+  if (action === "result") {
+    return jsonp_(e.parameter.callback, getPostResult_(e.parameter.requestId));
+  }
   throw new Error("Unsupported action.");
 }
 
 function doPost(e) {
   let requestId = "";
+  let action = "";
   try {
     const request = JSON.parse(e.parameter.payload || "{}");
     requestId = String(request.requestId || "");
-    const action = String(request.action || "");
+    action = String(request.action || "");
     let result;
 
     if (action === "saveState") {
       result = saveState_(request.state, request.baseState);
+      result.taskNotifications = sendTaskNotifications_(result.newTasks, result.state);
+      delete result.newTasks;
     } else if (action === "uploadFile") {
       result = uploadFile_(request);
     } else if (action === "deleteFile") {
@@ -40,10 +59,41 @@ function doPost(e) {
       throw new Error("Unsupported action.");
     }
 
-    return postMessageResponse_({ requestId: String(request.requestId || ""), ok: true, result: result });
+    const response = {
+      requestId: requestId,
+      ok: true,
+      result: action === "saveState"
+        ? { saved: true, taskNotifications: result.taskNotifications }
+        : result
+    };
+    storePostResult_(requestId, response);
+    return postMessageResponse_({
+      requestId: requestId,
+      ok: true,
+      result: result
+    });
   } catch (error) {
-    return postMessageResponse_({ requestId: requestId, ok: false, error: String(error.message || error) });
+    const response = {
+      requestId: requestId,
+      ok: false,
+      error: String(error.message || error)
+    };
+    storePostResult_(requestId, response);
+    return postMessageResponse_(response);
   }
+}
+
+function getPostResult_(requestId) {
+  const id = String(requestId || "");
+  if (!/^[\w-]{1,128}$/.test(id)) throw new Error("Invalid request ID.");
+  const value = CacheService.getScriptCache().get("velgo:post:" + id);
+  return value ? JSON.parse(value) : null;
+}
+
+function storePostResult_(requestId, response) {
+  const id = String(requestId || "");
+  if (!/^[\w-]{1,128}$/.test(id)) return;
+  CacheService.getScriptCache().put("velgo:post:" + id, JSON.stringify(response), 300);
 }
 
 function loadState_() {
@@ -71,11 +121,15 @@ function saveState_(state, baseState) {
   try {
     const file = findStateFile_();
     let mergedState = publicState;
+    let previousState = null;
     if (file) {
       if (!baseState) {
         throw new Error("This app version cannot safely sync shared changes. Reload the page and try again.");
       }
       const currentEnvelope = JSON.parse(file.getBlob().getDataAsString("UTF-8"));
+      if (currentEnvelope.state && typeof currentEnvelope.state === "object") {
+        previousState = currentEnvelope.state;
+      }
       if (currentEnvelope.state) {
         mergedState = mergeConcurrentState_(baseState, publicState, currentEnvelope.state);
       }
@@ -85,7 +139,12 @@ function saveState_(state, baseState) {
         updatedAt: updatedAt,
         state: mergedState
       }));
-      return { fileId: file.getId(), updatedAt: updatedAt, state: mergedState };
+      return {
+        fileId: file.getId(),
+        updatedAt: updatedAt,
+        state: mergedState,
+        newTasks: newlyCreatedTasks_(previousState?.tasks, mergedState.tasks)
+      };
     }
 
     const updatedAt = new Date().toISOString();
@@ -98,10 +157,125 @@ function saveState_(state, baseState) {
       }),
       MimeType.PLAIN_TEXT
     );
-    return { fileId: created.getId(), updatedAt: updatedAt, state: mergedState };
+    return { fileId: created.getId(), updatedAt: updatedAt, state: mergedState, newTasks: [] };
   } finally {
     lock.releaseLock();
   }
+}
+
+function newlyCreatedTasks_(previousTasks, currentTasks) {
+  const previousIds = new Set(
+    (Array.isArray(previousTasks) ? previousTasks : [])
+      .filter(task => task && task.id)
+      .map(task => String(task.id))
+  );
+  return (Array.isArray(currentTasks) ? currentTasks : [])
+    .filter(task => task && task.id && !previousIds.has(String(task.id)));
+}
+
+function sendTaskNotifications_(tasks, state) {
+  return (Array.isArray(tasks) ? tasks : []).map(task => {
+    try {
+      return sendTaskNotification_(task, state);
+    } catch (error) {
+      return {
+        taskId: String(task?.id || ""),
+        status: "failed",
+        message: String(error.message || error).slice(0, 300)
+      };
+    }
+  });
+}
+
+function sendTaskNotification_(task, state) {
+  const taskId = String(task.id || "");
+  if (!/^TASK-\d{3,}$/.test(taskId)) {
+    return { taskId: taskId, status: "invalid_task" };
+  }
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const properties = PropertiesService.getScriptProperties();
+    const sentKey = "velgo:task-email:" + taskId + ":" + String(task.createdAt || "");
+    if (properties.getProperty(sentKey)) {
+      return { taskId: taskId, status: "already_sent" };
+    }
+
+    const users = Array.isArray(state.users) ? state.users : [];
+    const assignee = users.find(user => String(user.id) === String(task.assigneeId));
+    if (!assignee) {
+      return { taskId: taskId, status: "assignee_missing" };
+    }
+
+    const recipient = String(assignee.email || "").trim();
+    if (!recipient) {
+      return { taskId: taskId, status: "missing_email" };
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)) {
+      return { taskId: taskId, status: "invalid_email" };
+    }
+
+    const title = String(task.title || "Untitled task").replace(/[\r\n]+/g, " ").trim().slice(0, 160);
+    const creator = users.find(user => String(user.id) === String(task.createdBy));
+    const creatorName = creator
+      ? displayName_(creator)
+      : String(task.createdByName || "VELGO team").slice(0, 120);
+    const assigneeName = displayName_(assignee);
+    const deadline = String(task.deadline || "Not set").slice(0, 40);
+    const subject = ("New task assigned: " + taskId + " - " + title).slice(0, 250);
+    const body = [
+      "Hello " + assigneeName + ",",
+      "",
+      "A new task has been assigned to you on VELGO.",
+      "",
+      "Task number: " + taskId,
+      "Task: " + title,
+      "Assigned by: " + creatorName,
+      "Deadline: " + deadline,
+      "",
+      "Open VELGO platform: " + PLATFORM_URL
+    ].join("\n");
+    const htmlBody = [
+      '<div style="font-family:Arial,sans-serif;color:#1f2937;line-height:1.5">',
+      "<h2>New task assigned</h2>",
+      "<p>Hello " + escapeHtml_(assigneeName) + ", a new task has been assigned to you.</p>",
+      '<table style="border-collapse:collapse;margin:16px 0">',
+      "<tr><td style=\"padding:4px 12px 4px 0\"><strong>Task number</strong></td><td>" + escapeHtml_(taskId) + "</td></tr>",
+      "<tr><td style=\"padding:4px 12px 4px 0\"><strong>Task</strong></td><td>" + escapeHtml_(title) + "</td></tr>",
+      "<tr><td style=\"padding:4px 12px 4px 0\"><strong>Assigned by</strong></td><td>" + escapeHtml_(creatorName) + "</td></tr>",
+      "<tr><td style=\"padding:4px 12px 4px 0\"><strong>Deadline</strong></td><td>" + escapeHtml_(deadline) + "</td></tr>",
+      "</table>",
+      '<p><a href="' + escapeHtml_(PLATFORM_URL) + '" style="display:inline-block;padding:10px 16px;background:#1f2937;color:#fff;text-decoration:none;border-radius:6px">Open VELGO platform</a></p>',
+      "</div>"
+    ].join("");
+
+    MailApp.sendEmail({
+      to: recipient,
+      subject: subject,
+      body: body,
+      htmlBody: htmlBody,
+      name: "VELGO Platform"
+    });
+    properties.setProperty(sentKey, new Date().toISOString());
+    return { taskId: taskId, status: "sent" };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function displayName_(user) {
+  return [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username || "VELGO team";
+}
+
+function escapeHtml_(value) {
+  return String(value ?? "").replace(/[&<>"']/g, character => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[character]);
 }
 
 function mergeConcurrentState_(base, local, remote) {
